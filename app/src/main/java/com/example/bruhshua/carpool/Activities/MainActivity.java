@@ -17,6 +17,7 @@ import com.example.bruhshua.carpool.Fragments.MyAccountFragment;
 import com.example.bruhshua.carpool.Fragments.MyTripsFragment;
 import com.example.bruhshua.carpool.Fragments.PlanTripFragment;
 import com.example.bruhshua.carpool.R;
+import com.example.bruhshua.carpool.User;
 
 /**
  * Created by bruhshua on 5/21/17.
@@ -28,10 +29,16 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle actionBarDrawerToggle;
     private NavigationView nvDrawer;
 
+    private User user; //Todo:Get the current user using the application from firebase.
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+
+
+
 
         nvDrawer = (NavigationView) findViewById(R.id.navigationView);
         nvDrawer.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -41,7 +48,8 @@ public class MainActivity extends AppCompatActivity {
                 switch (item.getItemId()){
                     case R.id.my_account:
 
-                        MyAccountFragment myAccountFragment = MyAccountFragment.newInstance();
+                        //Pass in user data that is queried in MainActivity.
+                        MyAccountFragment myAccountFragment = MyAccountFragment.newInstance(user);
                         getSupportFragmentManager()
                                 .beginTransaction()
                                 .replace(R.id.fragment_container,myAccountFragment)
@@ -68,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
                     default:
 
-                        MyAccountFragment fragment1 = MyAccountFragment.newInstance();
+                        MyAccountFragment fragment1 = MyAccountFragment.newInstance(user);
                         getSupportFragmentManager()
                                 .beginTransaction()
                                 .replace(R.id.fragment_container,fragment1)

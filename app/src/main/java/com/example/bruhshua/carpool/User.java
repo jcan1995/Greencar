@@ -2,47 +2,37 @@ package com.example.bruhshua.carpool;
 
 import android.location.Location;
 
+import java.io.Serializable;
+
 /**
  * Created by bruhshua on 2/18/17.
  */
 
-public class User {
+public class User implements Serializable{
 
-    String number;
-    String email;
-    String firstName;
-    String lastName;
-    String school;
-    Location userLocation;
+    private String number;
+    private String email;
+    private String password;
+    private String firstName;
+    private String lastName;
 
+    public User(){}
 
+    public User(String number, String email, String password, String firstName, String lastName) {
 
-    User(){}
-
-    User(String n, String e, String f, String l, String s, Location u){
-        number = n;
-        email = e;
-        firstName = f;
-        lastName = l;
-        school = s;
-        userLocation = u;
-
+        this.number = number;
+        this.email = email;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 
-    public Location getUserLocation() {
-        return userLocation;
+    public String getPassword() {
+        return password;
     }
 
-    public void setUserLocation(Location userLocation) {
-        this.userLocation = userLocation;
-    }
-
-    public String getSchool() {
-        return school;
-    }
-
-    public void setSchool(String school) {
-        this.school = school;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getNumber() {
