@@ -10,6 +10,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -50,6 +51,11 @@ public class LoginActivity extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.login_activity);
         mAuth = FirebaseAuth.getInstance();
+        if(mAuth.getCurrentUser() != null){
+            Intent i = new Intent(getApplicationContext(), MainActivity.class);
+            i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
+            startActivity(i);
+        }
 
     }
 
@@ -75,9 +81,9 @@ public class LoginActivity extends Activity {
                         Toast.makeText(getApplicationContext(), "Login Successful.", Toast.LENGTH_SHORT).show();
 
                         //Todo: Go to MainActivity in app.
-//                        Intent i = new Intent(getActivity(), MainActivity.class);
-//                        i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
-//                        startActivity(i);
+                        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                        i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
+                        startActivity(i);
                     } else {
                         Dialog.dismiss();
                         Toast.makeText(getApplicationContext(), "Login Failed.", Toast.LENGTH_SHORT).show();
@@ -90,7 +96,6 @@ public class LoginActivity extends Activity {
 
     public void register(View v){
 
-        finish();
         Intent i = new Intent(this,RegisterActivity.class);
         startActivity(i);
 
@@ -98,68 +103,8 @@ public class LoginActivity extends Activity {
 
     public void forgotPassword(View v){
 
-        finish();
         Intent i = new Intent(this,ResetPasswordActivity.class);
         startActivity(i);
 
     }
-
-
-//    @Override
-//    public void Register(String email, String password) {
-//        Dialog = new ProgressDialog(this);
-//        Dialog.setMessage("Registering...");
-//        if (!email.equals("") || !password.equals("")) {
-//
-//            Dialog.show();
-//
-//            mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-//                @Override
-//                public void onComplete(@NonNull Task<AuthResult> task) {
-//
-//                    if (task.isSuccessful()) {
-//                        Dialog.dismiss();
-//                        Toast.makeText(getApplicationContext(), "Registration Successful.", Toast.LENGTH_SHORT).show();
-//                        getFragmentManager().popBackStack();
-//                    }else{
-//                        Dialog.dismiss();
-//                        Toast.makeText(getApplicationContext(), "Registration Failed.", Toast.LENGTH_SHORT).show();
-//
-//                    }
-//
-//                }
-//            });
-//        }
-//    }
-
-
-//    @Override
-//    public void Login(String email, String password) {
-//
-//        if (!email.equals("") || !password.equals("")) {
-//
-//            Dialog = new ProgressDialog(this);
-//            Dialog.setMessage("Authenticating...");
-//            Dialog.show();
-//            mAuth.signInWithEmailAndPassword(email,password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-//                @Override
-//                public void onComplete(@NonNull Task<AuthResult> task) {
-//                    Dialog.dismiss();
-//                    if(task.isSuccessful()){
-//                        Toast.makeText(getApplicationContext(), "Login Successful.", Toast.LENGTH_SHORT).show();
-//
-//                        //Todo: Go to MainActivity in app.
-////                        Intent i = new Intent(getActivity(), MainActivity.class);
-////                        i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
-////                        startActivity(i);
-//                    }
-//                    else{
-//                        Dialog.dismiss();
-//                        Toast.makeText(getApplicationContext(), "Login Failed.", Toast.LENGTH_SHORT).show();
-//                    }
-//                }
-//            });
-//
-//        }
-//    }
 }

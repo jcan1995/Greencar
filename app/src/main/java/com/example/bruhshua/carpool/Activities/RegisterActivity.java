@@ -1,17 +1,24 @@
 package com.example.bruhshua.carpool.Activities;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.bruhshua.carpool.R;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -25,23 +32,29 @@ import com.google.firebase.database.ValueEventListener;
 
 public class RegisterActivity extends Activity{
 
-    FirebaseAuth firebaseAuth;
-    EditText email, password;
-    ProgressDialog progressDialog;
+    private FirebaseAuth firebaseAuth;
+    private EditText etEmail, etPassword;
+    private ProgressDialog dialog;
 
-
+    private Button bRegisterUser;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.register_activity);
+        Log.d("LoginActivity","Inside onCreate RegisterActivity");
 
         firebaseAuth = FirebaseAuth.getInstance(); //create FirebaseAuth object and get the instance
 
-        email = (EditText) findViewById(R.id.tvRegEmail);
-        password = (EditText) findViewById(R.id.tvRegPassword);
-
+        etEmail = (EditText) findViewById(R.id.tvRegEmail);
+        etPassword = (EditText) findViewById(R.id.tvRegPassword);
+        bRegisterUser = (Button) findViewById(R.id.bRegister);
+        bRegisterUser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                registerUser();
+            }
+        });
         if (firebaseAuth.getCurrentUser() != null) {
-            finish();
             //Todo: send user to the Main Activty
         }
     }
@@ -49,34 +62,50 @@ public class RegisterActivity extends Activity{
 
 
 
-    public void registerUser(View view){
+    public void registerUser(){
 
-        String parsedEmail = email.getText().toString().trim();
-        String parsedPassword = password.getText().toString().trim();
+        Log.d("RegisterActivity","Inside registerUser");
+        String email = etEmail.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
 
-        if(TextUtils.isEmpty(parsedEmail)){
+        if(TextUtils.isEmpty(email)){
             //if the email text field is empty
             Toast.makeText(getApplicationContext(),"Please Input Your Email",Toast.LENGTH_LONG).show();
             return;
         }
 
-        if(TextUtils.isEmpty(parsedPassword)){
+        if(TextUtils.isEmpty(password)){
             //if the password text field is empty
             Toast.makeText(getApplicationContext(),"Please Input Your Password",Toast.LENGTH_LONG).show();
             return;
         }
 
-        progressDialog.setMessage("Registering User...");
-        progressDialog.show();
+        dialog = new ProgressDialog(this);
+        dialog.setMessage("Registering User...");
+        dialog.show();
 
+        firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
 
-        //Todo: query data into Firebase
+                    if (task.isSuccessful()) {
+                        dialog.dismiss();
+                        Toast.makeText(getApplicationContext(), "Registration Successful.", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(getApplicationContext(),LoginActivity.class));
+
+                    }else{
+                        dialog.dismiss();
+                        Toast.makeText(getApplicationContext(), "Registration Failed.", Toast.LENGTH_SHORT).show();
+
+                    }
+
+                }
+            });
 
     }
 
     public void backToLogIn(View view){
         //send user back to the log in activity
-        finish();
         startActivity(new Intent(this,LoginActivity.class));
     }
 }

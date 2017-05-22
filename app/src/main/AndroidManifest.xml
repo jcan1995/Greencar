@@ -23,6 +23,10 @@
 
         </activity>
 
+        <activity android:name=".Activities.RegisterActivity" android:label="Registration"/>
+        <activity android:name=".Activities.ResetPasswordActivity" android:label="Reset Password"/>
+        <activity android:name=".Activities.MainActivity" android:label="Carpool"/>
+
     </application>
 
 </manifest>
