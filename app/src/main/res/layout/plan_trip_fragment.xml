@@ -4,10 +4,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
+    <fragment
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Plan Trip Fragment"
+        android:layout_height="match_parent"
+        android:id="@+id/map_fragment"
+        class="com.google.android.gms.maps.SupportMapFragment"
         />
 
 </LinearLayout>

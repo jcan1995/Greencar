@@ -27,6 +27,11 @@
         <activity android:name=".Activities.ResetPasswordActivity" android:label="Reset Password"/>
         <activity android:name=".Activities.MainActivity" android:label="Carpool"/>
 
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyD9yYfEXnAq5IQa5qQjM9nzldm1Osx-HVg" />
+
     </application>
 
 </manifest>
