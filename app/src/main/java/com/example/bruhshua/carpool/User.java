@@ -10,6 +10,7 @@ import java.io.Serializable;
 
 public class User implements Serializable{
 
+    //THIS IS A TEST FROM BRANCH
     private String number;
     private String email;
     private String password;
