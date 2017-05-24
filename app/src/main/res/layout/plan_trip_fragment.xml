@@ -4,11 +4,58 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/white">
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingTop="8dp">
+
+            <Button
+                android:id="@+id/bSetTrip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_alignParentLeft="true"
+                android:elevation="0dp"
+                android:background="@color/colorPrimary"
+                android:text="Set Trip"
+                android:textColor="@color/white"/>
+
+            <EditText
+                android:id="@+id/etNumPassengers"
+                android:layout_width="wrap_content"
+                android:layout_marginRight="16dp"
+                android:inputType="numberDecimal"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:hint="# Passengers" />
+
+        </RelativeLayout>
+
+        <EditText
+            android:id="@+id/etDestionationLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:inputType="textPostalAddress"
+            android:hint="Destination Location" />
+
+    </LinearLayout>
+
+
     <fragment
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="8"
         android:id="@+id/map_fragment"
         class="com.google.android.gms.maps.SupportMapFragment"
         />
-
 </LinearLayout>
