@@ -1,9 +1,16 @@
 package com.example.bruhshua.carpool.Fragments;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,22 +18,40 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Manifest;
 import com.example.bruhshua.carpool.R;
+import com.example.bruhshua.carpool.ServiceRequests.FetchLocationFromService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
 
 /**
  * Created by bruhshua on 5/21/17.
@@ -36,19 +61,28 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 101;
 
+    private LocalBroadcastManager manager;
+
+    private ProgressDialog dialog;
     private GoogleMap map;
     private GoogleApiClient mGoogleApiClient;
+
     private Location mCurrentLocation;
+    private Location mDestinationLocation;
+
+    private LatLng mCurrentLatLng;
+    private LatLng mDestinationLatLng;
 
     private SupportMapFragment mSupportMapFragment;
     private EditText etNumberOfPassengers;
+    private EditText etDesinationLocation;
     private Button bSetTrip;
 
-
+    //Todo: http request to get step by step latlngs to create route between points.
     public static PlanTripFragment newInstance() {
         PlanTripFragment planTripFragment = new PlanTripFragment();
         Bundle args = new Bundle();
-        // args.put("DIALOF",dialog);
+        // args.put("DATA",DATA);
         planTripFragment.setArguments(args);
         return planTripFragment;
     }
@@ -84,21 +118,67 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
                     .addApi(LocationServices.API)
                     .build();
         }
+        initBroadcastReceiver();
+
+    }
+
+    private void initBroadcastReceiver(){
+        manager = LocalBroadcastManager.getInstance(getContext());
+        MyBroadCastReceiver receiver = new MyBroadCastReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("com.action.getdestlatlng");
+        filter.addAction("com.action.getstepslatlng");
+        manager.registerReceiver(receiver,filter);
+    }
+
+    public void updateUI(){
+
+        //Todo: Include step by step polylines to map.
+        if(mCurrentLatLng != null && mDestinationLatLng != null) {
+            PolylineOptions options = new PolylineOptions().add(mCurrentLatLng, mDestinationLatLng)
+                    .width(5).color(Color.GREEN);
+            MarkerOptions destinationMarker = new MarkerOptions();
+            destinationMarker.position(mDestinationLatLng);
+            map.addMarker(destinationMarker);
+
+            Polyline line = map.addPolyline(options);
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            builder.include(mCurrentLatLng);
+            builder.include(mDestinationLatLng);
+            LatLngBounds bounds = builder.build();
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds,32);//32
+            map.animateCamera(cu);
 
 
+        }else{
+            Log.d("PlanTrip","LatLngs are null bitch");
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         View v = inflater.inflate(R.layout.plan_trip_fragment, container, false);
 
-
+        etDesinationLocation = (EditText) v.findViewById(R.id.etDestionationLocation);
         etNumberOfPassengers = (EditText) v.findViewById(R.id.etNumPassengers);
+
         bSetTrip = (Button) v.findViewById(R.id.bSetTrip);
         bSetTrip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Get data, set trip
+
+                //Get address, construct Location object....
+                if(!etDesinationLocation.getText().toString().equals("")){
+                    dialog = new ProgressDialog(getActivity());
+                    dialog.setMessage("Please wait...");
+                    dialog.show();
+                    getDestinationLatLngFromAddress(etDesinationLocation.getText().toString());
+                    Log.d("PlanTrip","After clicking");
+
+                }else{
+                    Toast.makeText(getActivity(), "Please Enter an Address.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -118,12 +198,51 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        Log.d("onCreate", "onMapReady fired");
+        Log.d("PlanTrip", "onMapReady fired");
         map = googleMap;
 
        // checkPermissions();
     }
 
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.d("PlanTrip", "onConnected fired");
+
+        if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            Log.d("PlanTrip", "ACCESS_FINE_LOCATION INCLUDED");
+            //This method doesn't provide specific data that we need to use. Such as LatLng
+            //Maybe we can use this method just for its UI.
+
+            map.setMyLocationEnabled(true);
+        } else {
+            Log.d("PlanTrip", "ACCESS_FINE_LOCATION NOT INCLUDED");
+            //Callback onRequestPermissionsResult is called in hosting activity!
+            //Todo: Maybe show dialog that tells users why we need their location.
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        //Todo: Set destination
+        if (mCurrentLocation != null) {
+
+            mCurrentLatLng = new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude());
+
+            Log.d("PlanTrip","(onConnected)Lat: "+mCurrentLocation.getLatitude());
+            Log.d("PlanTrip","(onConnected)Long: "+mCurrentLocation.getLongitude());
+        }
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
 
     public void checkPermissions() {
         if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -142,41 +261,59 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
         }
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        Log.d("onCreate", "onConnected fired");
+    public void getDestinationLatLngFromAddress(String place){
+        try{
+            Geocoder placeGeocoder = new Geocoder(getContext());
+            List<Address> address;
+            address = placeGeocoder.getFromLocationName(place,5);
+            if(address == null){
+                //Do something
+            }else{
+                Address location = address.get(0);
+                Log.d("PlanTrip","(get..FromAddress)Lat: "+location.getLatitude());
+                Log.d("PlanTrip","(get..FromAddress)Long: "+location.getLongitude());
 
-        if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            Log.d("onCreate", "ACCESS_FINE_LOCATION INCLUDED");
-            //This method doesn't provide specific data that we need to use. Such as LatLng
-            //Maybe we can use this method just for its UI.
+                FetchLocationFromService fectchLocationFromService = new FetchLocationFromService(place.replaceAll("\\s+",""),getContext());
+                fectchLocationFromService.execute();
+            }
 
-            map.setMyLocationEnabled(true);
-        } else {
-            Log.d("onCreate", "ACCESS_FINE_LOCATION NOT INCLUDED");
-            //Callback onRequestPermissionsResult is called in hosting activity!
-            //Todo: Maybe show dialog that tells users why we need their location.
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }catch (Exception e){
+            //This method is used when above method returns null...
+            e.printStackTrace();
+
+            //Todo: Make http requests to get JSON data for steps and JSON data for LatLng from address strings
+            FetchLocationFromService fectchLocationFromService = new FetchLocationFromService(place.replaceAll("\\s+",""),getContext());
+            fectchLocationFromService.execute();
         }
-        mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        //Todo: Set destination
-        if (mCurrentLocation != null) {
-
-            Log.d("onCreate","Lat: "+mCurrentLocation.getLatitude());
-            Log.d("onCreate","Long: "+mCurrentLocation.getLongitude());
-        }
-
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
-    }
+    class MyBroadCastReceiver extends BroadcastReceiver {
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        @Override
+        public void onReceive(Context context, Intent intent) {
 
+            Log.d("PlanTrip","intent:" + intent.getAction());
+
+            switch (intent.getAction()){
+                case "com.action.getdestlatlng":
+                    Bundle bundle = intent.getParcelableExtra("BUNDLE");
+                    mDestinationLatLng = bundle.getParcelable("DEST");
+                    Log.d("PlanTrip","Coordinates:"+mDestinationLatLng.toString());
+                    dialog.dismiss();
+                    updateUI();
+                    break;
+                case "com.action.getstepslatlng":
+                    //Do something
+                    dialog.dismiss();
+
+                    break;
+
+                case "":
+                    //Do something else, although shouldn't happen.
+                    dialog.dismiss();
+                    break;
+            }
+
+        }
     }
 }
