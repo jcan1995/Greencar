@@ -2,6 +2,7 @@ package com.example.bruhshua.carpool.ServiceRequests;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -17,17 +18,17 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * Created by bruhshua on 5/24/17.
+ * Created by bruhshua on 5/30/17.
  */
 
-public class FetchLocationFromService extends AsyncTask<Void,Void,StringBuilder> {
+public class FetchAddressFromService extends AsyncTask<Void,Void,StringBuilder> {
 
-    String place;
-    private LocalBroadcastManager manager ;
+    private LocalBroadcastManager manager;
+    private Location currentLocation;
 
-    public FetchLocationFromService(String place, Context context) {
+    public FetchAddressFromService(Context context, Location currentLocation) {
         super();
-        this.place = place;
+        this.currentLocation = currentLocation;
         manager = LocalBroadcastManager.getInstance(context);
     }
 
@@ -46,8 +47,7 @@ public class FetchLocationFromService extends AsyncTask<Void,Void,StringBuilder>
             HttpURLConnection conn = null;
             StringBuilder jsonResults = new StringBuilder();
 
-            String googleMapUrl = "http://maps.googleapis.com/maps/api/geocode/json?address="
-                    + this.place + "&sensor=false";
+            String googleMapUrl = "http://maps.googleapis.com/maps/api/geocode/json?latlng=" + currentLocation.getLatitude() + ","+ currentLocation.getLongitude() + "&sensor=true";
 
             URL url = new URL(googleMapUrl);
             conn = (HttpURLConnection) url.openConnection();
@@ -69,28 +69,21 @@ public class FetchLocationFromService extends AsyncTask<Void,Void,StringBuilder>
     @Override
     protected void onPostExecute(StringBuilder result) {
         super.onPostExecute(result);
-
-        Log.d("PlanTrip","onPost:" + result.toString());
         try{
-            JSONObject jsonObj = new JSONObject(result.toString());
-            JSONArray resultJsonArray = jsonObj.getJSONArray("results");
 
-            JSONObject beforeGeometryObj = resultJsonArray.getJSONObject(0);
-            JSONObject geometryObj = beforeGeometryObj.getJSONObject("geometry");
-            JSONObject locationObj = geometryObj.getJSONObject("location");
+            //Todo: extract current address from JSON data, send string through intent.
 
-            String lat = locationObj.getString("lat");
-            String lon = locationObj.getString("lng");
-            Double latitude = Double.valueOf(lat);
-            Double longitude = Double.valueOf(lon);
+            JSONObject jsonObject = new JSONObject(result.toString());
+            JSONArray resultJSONArray = jsonObject.getJSONArray("results");
+            JSONObject beforeAddress = resultJSONArray.getJSONObject(0);
 
-            LatLng latLng = new LatLng(latitude,longitude);
+            String address = beforeAddress.getString("formatted_address");
+            //Log.d("PlanTrip","onPost, formatted_adress: " + address);//Display current address, should be up2 yous address.
 
             Bundle args = new Bundle();
-            args.putParcelable("DEST",latLng);
-            //Use another intent for route data extraction
+            args.putString("DEST",address);
 
-            Intent intent = new Intent("com.action.getdestlatlng");
+            Intent intent = new Intent("com.action.getdestaddress");
             intent.putExtra("BUNDLE",args);
             manager.sendBroadcast(intent);
 

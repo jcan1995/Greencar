@@ -29,7 +29,9 @@ import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Manifest;
 import com.example.bruhshua.carpool.R;
+import com.example.bruhshua.carpool.ServiceRequests.FetchAddressFromService;
 import com.example.bruhshua.carpool.ServiceRequests.FetchLocationFromService;
+import com.example.bruhshua.carpool.ServiceRequests.FetchRouteStepsFromService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -51,11 +53,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by bruhshua on 5/21/17.
  */
+
+
+    /*
+         Directions APIKEY = AIzaSyB0WPNPyjRxrwB7iyzVDcxwy4W2Gd-KmUA
+     */
+
+//Todo: PRIORITY, obtain users current address from Location object.
 
 public class PlanTripFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -71,6 +81,8 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
     private Location mDestinationLocation;
 
     private LatLng mCurrentLatLng;
+    private String currentAddress;
+    private String destinationAddress;
     private LatLng mDestinationLatLng;
 
     private SupportMapFragment mSupportMapFragment;
@@ -127,6 +139,7 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
         MyBroadCastReceiver receiver = new MyBroadCastReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction("com.action.getdestlatlng");
+        filter.addAction("com.action.getdestaddress");
         filter.addAction("com.action.getstepslatlng");
         manager.registerReceiver(receiver,filter);
     }
@@ -135,8 +148,10 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
 
         //Todo: Include step by step polylines to map.
         if(mCurrentLatLng != null && mDestinationLatLng != null) {
+
             PolylineOptions options = new PolylineOptions().add(mCurrentLatLng, mDestinationLatLng)
                     .width(5).color(Color.GREEN);
+
             MarkerOptions destinationMarker = new MarkerOptions();
             destinationMarker.position(mDestinationLatLng);
             map.addMarker(destinationMarker);
@@ -168,13 +183,12 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
             @Override
             public void onClick(View v) {
 
-                //Get address, construct Location object....
-                if(!etDesinationLocation.getText().toString().equals("")){
+                if(!etDesinationLocation.getText().toString().equals("") && currentAddress != null){
                     dialog = new ProgressDialog(getActivity());
                     dialog.setMessage("Please wait...");
                     dialog.show();
-                    getDestinationLatLngFromAddress(etDesinationLocation.getText().toString());
-                    Log.d("PlanTrip","After clicking");
+
+                    getDirections(etDesinationLocation.getText().toString());// Just pass in the destination string since current address is initialized in onConnect interface method.
 
                 }else{
                     Toast.makeText(getActivity(), "Please Enter an Address.", Toast.LENGTH_SHORT).show();
@@ -194,6 +208,33 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
             fm.beginTransaction().show(mSupportMapFragment).commit();
 
         return v;
+    }
+
+    private void getCurrentAddress() {
+
+        try{
+
+            FetchAddressFromService fectchLocationFromService = new FetchAddressFromService(getContext(),mCurrentLocation);
+            fectchLocationFromService.execute();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private void getDirections(String destinationAddress) {
+        //Todo: Use entered address and current address to get direction path JSON
+
+        try{
+            Log.d("PlanTrip","current:"+currentAddress);
+            Log.d("PlanTrip","destination:"+destinationAddress);
+
+            FetchRouteStepsFromService fetchRouteStepsFromService = new FetchRouteStepsFromService(currentAddress,destinationAddress.replaceAll("\\s+",""),getContext());
+            fetchRouteStepsFromService.execute();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -217,20 +258,22 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
             map.setMyLocationEnabled(true);
         } else {
             Log.d("PlanTrip", "ACCESS_FINE_LOCATION NOT INCLUDED");
-            //Callback onRequestPermissionsResult is called in hosting activity!
             //Todo: Maybe show dialog that tells users why we need their location.
             ActivityCompat.requestPermissions(getActivity(),
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
         mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        //Todo: Set destination
+
+
         if (mCurrentLocation != null) {
+            dialog = new ProgressDialog(getActivity());
+            dialog.setMessage("Please wait...");
+            dialog.show();
 
             mCurrentLatLng = new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude());
-
-            Log.d("PlanTrip","(onConnected)Lat: "+mCurrentLocation.getLatitude());
-            Log.d("PlanTrip","(onConnected)Long: "+mCurrentLocation.getLongitude());
+            //Todo: Call getCurrentAddress here.
+            getCurrentAddress();
         }
 
     }
@@ -261,31 +304,31 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
         }
     }
 
-    public void getDestinationLatLngFromAddress(String place){
-        try{
-            Geocoder placeGeocoder = new Geocoder(getContext());
-            List<Address> address;
-            address = placeGeocoder.getFromLocationName(place,5);
-            if(address == null){
-                //Do something
-            }else{
-                Address location = address.get(0);
-                Log.d("PlanTrip","(get..FromAddress)Lat: "+location.getLatitude());
-                Log.d("PlanTrip","(get..FromAddress)Long: "+location.getLongitude());
-
-                FetchLocationFromService fectchLocationFromService = new FetchLocationFromService(place.replaceAll("\\s+",""),getContext());
-                fectchLocationFromService.execute();
-            }
-
-        }catch (Exception e){
-            //This method is used when above method returns null...
-            e.printStackTrace();
-
-            //Todo: Make http requests to get JSON data for steps and JSON data for LatLng from address strings
-            FetchLocationFromService fectchLocationFromService = new FetchLocationFromService(place.replaceAll("\\s+",""),getContext());
-            fectchLocationFromService.execute();
-        }
-    }
+//
+//    public void getDestinationLatLngFromAddress(String place){
+//        try{
+//            Geocoder placeGeocoder = new Geocoder(getContext());
+//            List<Address> address;
+//            address = placeGeocoder.getFromLocationName(place,5);
+//            if(address == null){
+//                //Do something
+//            }else{
+//                Address location = address.get(0);
+//                Log.d("PlanTrip","(get..FromAddress)Lat: "+location.getLatitude());
+//                Log.d("PlanTrip","(get..FromAddress)Long: "+location.getLongitude());
+//
+////                FetchLocationFromService fectchLocationFromService = new FetchLocationFromService(place.replaceAll("\\s+",""),getContext());
+////                fectchLocationFromService.execute();
+//
+////                FetchRouteStepsFromService fetchRouteStepsFromService = new FetchRouteStepsFromService(place.replaceAll("\\s+",""));//Todo: pass in current and destination addressses, not LatLngs
+////                fetchRouteStepsFromService.execute();
+//            }
+//
+//        }catch (Exception e){
+//            //This method is used when above method returns null...
+//            e.printStackTrace();
+//        }
+//    }
 
     class MyBroadCastReceiver extends BroadcastReceiver {
 
@@ -293,19 +336,26 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
         public void onReceive(Context context, Intent intent) {
 
             Log.d("PlanTrip","intent:" + intent.getAction());
-
+            Bundle bundle = intent.getParcelableExtra("BUNDLE");;
             switch (intent.getAction()){
                 case "com.action.getdestlatlng":
-                    Bundle bundle = intent.getParcelableExtra("BUNDLE");
-                    mDestinationLatLng = bundle.getParcelable("DEST");
-                    Log.d("PlanTrip","Coordinates:"+mDestinationLatLng.toString());
-                    dialog.dismiss();
-                    updateUI();
+
+                    //bundle = intent.getParcelableExtra("BUNDLE");
+                   // mDestinationLatLng = bundle.getParcelable("DEST");
+                    // Log.d("PlanTrip","Coordinates:"+mDestinationLatLng.toString());
+                  //  updateUI();
+
                     break;
                 case "com.action.getstepslatlng":
                     //Do something
                     dialog.dismiss();
+                    break;
 
+                case "com.action.getdestaddress":
+
+                    currentAddress = bundle.getString("DEST");
+                    Log.d("PlanTrip","currentAddress:" + currentAddress);
+                    dialog.dismiss();
                     break;
 
                 case "":
@@ -313,7 +363,6 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
                     dialog.dismiss();
                     break;
             }
-
         }
     }
 }
