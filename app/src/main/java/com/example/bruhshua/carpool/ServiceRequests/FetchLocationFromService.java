@@ -22,12 +22,12 @@ import java.net.URL;
 
 public class FetchLocationFromService extends AsyncTask<Void,Void,StringBuilder> {
 
-    String place;
+    private String destinationAddress;
     private LocalBroadcastManager manager ;
 
-    public FetchLocationFromService(String place, Context context) {
+    public FetchLocationFromService(String destinationAddress, Context context) {
         super();
-        this.place = place;
+        this.destinationAddress = destinationAddress;
         manager = LocalBroadcastManager.getInstance(context);
     }
 
@@ -47,7 +47,7 @@ public class FetchLocationFromService extends AsyncTask<Void,Void,StringBuilder>
             StringBuilder jsonResults = new StringBuilder();
 
             String googleMapUrl = "http://maps.googleapis.com/maps/api/geocode/json?address="
-                    + this.place + "&sensor=false";
+                    + this.destinationAddress + "&sensor=false";
 
             URL url = new URL(googleMapUrl);
             conn = (HttpURLConnection) url.openConnection();
@@ -70,7 +70,6 @@ public class FetchLocationFromService extends AsyncTask<Void,Void,StringBuilder>
     protected void onPostExecute(StringBuilder result) {
         super.onPostExecute(result);
 
-        Log.d("PlanTrip","onPost:" + result.toString());
         try{
             JSONObject jsonObj = new JSONObject(result.toString());
             JSONArray resultJsonArray = jsonObj.getJSONArray("results");

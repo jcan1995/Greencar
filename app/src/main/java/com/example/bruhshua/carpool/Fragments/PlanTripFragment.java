@@ -90,6 +90,7 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
     private EditText etDesinationLocation;
     private Button bSetTrip;
 
+    private ArrayList<PolylineOptions> mPolyOptions;
     //Todo: http request to get step by step latlngs to create route between points.
     public static PlanTripFragment newInstance() {
         PlanTripFragment planTripFragment = new PlanTripFragment();
@@ -147,19 +148,20 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
     public void updateUI(){
 
         //Todo: Include step by step polylines to map.
-        if(mCurrentLatLng != null && mDestinationLatLng != null) {
+//        if(mCurrentLatLng != null && mDestinationLatLng != null && mPolyOptions != null) {
+        if(mPolyOptions != null) {
 
-            PolylineOptions options = new PolylineOptions().add(mCurrentLatLng, mDestinationLatLng)
-                    .width(5).color(Color.GREEN);
-
+            map.clear();
             MarkerOptions destinationMarker = new MarkerOptions();
             destinationMarker.position(mDestinationLatLng);
             map.addMarker(destinationMarker);
+            for(int i = 0; i < mPolyOptions.size();i++) {
+                Polyline line = map.addPolyline(mPolyOptions.get(i));
+            }
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                builder.include(mCurrentLatLng);
+                builder.include(mDestinationLatLng);
 
-            Polyline line = map.addPolyline(options);
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            builder.include(mCurrentLatLng);
-            builder.include(mDestinationLatLng);
             LatLngBounds bounds = builder.build();
             CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds,32);//32
             map.animateCamera(cu);
@@ -188,6 +190,7 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
                     dialog.setMessage("Please wait...");
                     dialog.show();
 
+                    getDestinationAddress(etDesinationLocation.getText().toString());
                     getDirections(etDesinationLocation.getText().toString());// Just pass in the destination string since current address is initialized in onConnect interface method.
 
                 }else{
@@ -210,6 +213,17 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
         return v;
     }
 
+    private void getDestinationAddress(String destinationAddress){
+        try{
+            FetchLocationFromService fetchDestinationLatLng = new FetchLocationFromService(destinationAddress,getContext());
+            fetchDestinationLatLng.execute();
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     private void getCurrentAddress() {
 
         try{
@@ -227,9 +241,6 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
         //Todo: Use entered address and current address to get direction path JSON
 
         try{
-            Log.d("PlanTrip","current:"+currentAddress);
-            Log.d("PlanTrip","destination:"+destinationAddress);
-
             FetchRouteStepsFromService fetchRouteStepsFromService = new FetchRouteStepsFromService(currentAddress,destinationAddress.replaceAll("\\s+",""),getContext());
             fetchRouteStepsFromService.execute();
         }catch (Exception e){
@@ -239,7 +250,6 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        Log.d("PlanTrip", "onMapReady fired");
         map = googleMap;
 
        // checkPermissions();
@@ -247,17 +257,15 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.d("PlanTrip", "onConnected fired");
 
         if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-            Log.d("PlanTrip", "ACCESS_FINE_LOCATION INCLUDED");
             //This method doesn't provide specific data that we need to use. Such as LatLng
             //Maybe we can use this method just for its UI.
 
             map.setMyLocationEnabled(true);
+            Log.d("PlanTrip","setMyLocationEnabled");
         } else {
-            Log.d("PlanTrip", "ACCESS_FINE_LOCATION NOT INCLUDED");
             //Todo: Maybe show dialog that tells users why we need their location.
             ActivityCompat.requestPermissions(getActivity(),
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
@@ -265,14 +273,12 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
         }
         mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
-
         if (mCurrentLocation != null) {
             dialog = new ProgressDialog(getActivity());
             dialog.setMessage("Please wait...");
             dialog.show();
 
             mCurrentLatLng = new LatLng(mCurrentLocation.getLatitude(),mCurrentLocation.getLongitude());
-            //Todo: Call getCurrentAddress here.
             getCurrentAddress();
         }
 
@@ -287,46 +293,20 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
 
     }
 
-    public void checkPermissions() {
-        if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            Log.d("onCreate", "ACCESS_FINE_LOCATION INCLUDED");
-            //This method doesn't provide specific data that we need to use. Such as LatLng
-            //Maybe we can use this method just for its UI.
-            //  map.setMyLocationEnabled(true);
-        } else {
-            Log.d("onCreate", "ACCESS_FINE_LOCATION NOT INCLUDED");
-            //Callback onRequestPermissionsResult is called in hosting activity!
-            //Todo: Maybe show dialog that tells users why we need their location.
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-        }
-    }
-
-//
-//    public void getDestinationLatLngFromAddress(String place){
-//        try{
-//            Geocoder placeGeocoder = new Geocoder(getContext());
-//            List<Address> address;
-//            address = placeGeocoder.getFromLocationName(place,5);
-//            if(address == null){
-//                //Do something
-//            }else{
-//                Address location = address.get(0);
-//                Log.d("PlanTrip","(get..FromAddress)Lat: "+location.getLatitude());
-//                Log.d("PlanTrip","(get..FromAddress)Long: "+location.getLongitude());
-//
-////                FetchLocationFromService fectchLocationFromService = new FetchLocationFromService(place.replaceAll("\\s+",""),getContext());
-////                fectchLocationFromService.execute();
-//
-////                FetchRouteStepsFromService fetchRouteStepsFromService = new FetchRouteStepsFromService(place.replaceAll("\\s+",""));//Todo: pass in current and destination addressses, not LatLngs
-////                fetchRouteStepsFromService.execute();
-//            }
-//
-//        }catch (Exception e){
-//            //This method is used when above method returns null...
-//            e.printStackTrace();
+//    public void checkPermissions() {
+//        if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
+//                == PackageManager.PERMISSION_GRANTED) {
+//            Log.d("onCreate", "ACCESS_FINE_LOCATION INCLUDED");
+//            //This method doesn't provide specific data that we need to use. Such as LatLng
+//            //Maybe we can use this method just for its UI.
+//            //  map.setMyLocationEnabled(true);
+//        } else {
+//            Log.d("onCreate", "ACCESS_FINE_LOCATION NOT INCLUDED");
+//            //Callback onRequestPermissionsResult is called in hosting activity!
+//            //Todo: Maybe show dialog that tells users why we need their location.
+//            ActivityCompat.requestPermissions(getActivity(),
+//                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+//                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
 //        }
 //    }
 
@@ -335,26 +315,22 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
         @Override
         public void onReceive(Context context, Intent intent) {
 
-            Log.d("PlanTrip","intent:" + intent.getAction());
-            Bundle bundle = intent.getParcelableExtra("BUNDLE");;
+            Bundle bundle = intent.getParcelableExtra("BUNDLE");
             switch (intent.getAction()){
                 case "com.action.getdestlatlng":
 
-                    //bundle = intent.getParcelableExtra("BUNDLE");
-                   // mDestinationLatLng = bundle.getParcelable("DEST");
-                    // Log.d("PlanTrip","Coordinates:"+mDestinationLatLng.toString());
-                  //  updateUI();
-
+                    bundle = intent.getParcelableExtra("BUNDLE");
+                    mDestinationLatLng = bundle.getParcelable("DEST");
                     break;
                 case "com.action.getstepslatlng":
                     //Do something
+                    mPolyOptions = bundle.getParcelableArrayList("POLYLINES");
+                    updateUI();
                     dialog.dismiss();
                     break;
 
                 case "com.action.getdestaddress":
-
                     currentAddress = bundle.getString("DEST");
-                    Log.d("PlanTrip","currentAddress:" + currentAddress);
                     dialog.dismiss();
                     break;
 

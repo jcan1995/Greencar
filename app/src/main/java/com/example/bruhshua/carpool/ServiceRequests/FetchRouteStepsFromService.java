@@ -2,10 +2,14 @@ package com.example.bruhshua.carpool.ServiceRequests;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,6 +17,7 @@ import org.json.JSONObject;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 
 /**
@@ -44,12 +49,46 @@ public class FetchRouteStepsFromService extends AsyncTask<Void,Void,StringBuilde
         @Override
         protected void onPostExecute(StringBuilder result) {
             super.onPostExecute(result);
-            Log.d("PlanTrip","onPostExecute");
             try{
 
-                longInfo(result.toString());
+                JSONObject jsonObj = new JSONObject(result.toString());
+                JSONArray routesJSONArray = jsonObj.getJSONArray("routes");
+                JSONObject beforeLegsJSONObject = routesJSONArray.getJSONObject(0);
+                JSONArray legsJSONArray = beforeLegsJSONObject.getJSONArray("legs");
+
+                JSONObject beforeStepsJSONObject = legsJSONArray.getJSONObject(0);
+                JSONArray stepsJSONArray = beforeStepsJSONObject.getJSONArray("steps");
+
+                ArrayList<PolylineOptions> options = new ArrayList<>();
+                for(int i = 0; i < stepsJSONArray.length(); i++){
+
+                    JSONObject object = stepsJSONArray.getJSONObject(i);
+                    JSONObject start_location = object.getJSONObject("start_location");
+                    JSONObject end_location = object.getJSONObject("end_location");
+
+                    String startLat = start_location.getString("lat");
+                    String startLng = start_location.getString("lng");
+
+                    String endLat = end_location.getString("lat");
+                    String endLng = end_location.getString("lng");
+
+                    Double startLatFinal = Double.valueOf(startLat);
+                    Double startLngFinal = Double.valueOf(startLng);
+
+                    Double endLatFinal = Double.valueOf(endLat);
+                    Double endLngFinal = Double.valueOf(endLng);
+
+                    LatLng startLocation = new LatLng(startLatFinal,startLngFinal);
+                    LatLng endLocation = new LatLng(endLatFinal,endLngFinal);
+
+                    PolylineOptions options1 = new PolylineOptions().add(startLocation,endLocation).width(5).color(Color.GREEN).geodesic(true);
+                    options.add(options1);
+                }
+
 
                 Bundle args = new Bundle();
+                args.putParcelableArrayList("POLYLINES",options);
+
                 Intent intent = new Intent("com.action.getstepslatlng");
                 intent.putExtra("BUNDLE",args);
                 manager.sendBroadcast(intent);
@@ -63,16 +102,7 @@ public class FetchRouteStepsFromService extends AsyncTask<Void,Void,StringBuilde
         protected StringBuilder doInBackground(Void... params) {
             try{
 
-                //HttpURLConnection conn = null;
                 StringBuilder jsonResults = new StringBuilder();
-
-          //      Todo: Pass in current and destination locations
-//                String googleMapUrl = "https://maps.googleapis.com/maps/api/directions/json?" +
-//                        "origin=75+9th+Ave+New+York,+NY&" +
-//                        "destination=MetLife+Stadium+1+MetLife+Stadium+Dr+East+Rutherford,+NJ+07073&key=AIzaSyB0WPNPyjRxrwB7iyzVDcxwy4W2Gd-KmUA";
-
-                //currentAddress's spaces may not work.
-
                 String googleMapUrl = "https://maps.googleapis.com/maps/api/directions/json?" +
                         "origin="+currentAddress+"&" +
                         "destination="+destinationAddress+"&key=AIzaSyB0WPNPyjRxrwB7iyzVDcxwy4W2Gd-KmUA";
@@ -91,8 +121,8 @@ public class FetchRouteStepsFromService extends AsyncTask<Void,Void,StringBuilde
                 return jsonResults;
 
             }catch (Exception e){
-                Log.d("PlanTrip","doInBackgroud exception");
 
+                Log.d("PlanTrip","doInBackgroud exception");
                 e.printStackTrace();
             }
             return null;
