@@ -25,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Manifest;
@@ -85,11 +86,13 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
     private LatLng mDestinationLatLng;
 
     private SupportMapFragment mSupportMapFragment;
-    private EditText etNumberOfPassengers;
+
     private EditText etDesinationLocation;
     private Button bSetTrip;
+    private ImageView ivInvitePassenger;
 
-    private ArrayList<PolylineOptions> mPolyOptions;
+
+    private ArrayList<PolylineOptions> mPolyOptions = new ArrayList<>();
     //Todo: http request to get step by step latlngs to create route between points.
     public static PlanTripFragment newInstance() {
         PlanTripFragment planTripFragment = new PlanTripFragment();
@@ -150,14 +153,15 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
        if(mCurrentLatLng != null && mDestinationLatLng != null) {
        // if(mPolyOptions != null) {
             Log.d("PlanTrip","Inside update uI");
+           Log.d("PlanTrip","PolyOptions size: " + mPolyOptions.size());
 
-           // map.clear();
+           for(int i = 0; i < mPolyOptions.size();i++){
+               map.addPolyline(mPolyOptions.get(i));
+           }
             MarkerOptions destinationMarker = new MarkerOptions();
             destinationMarker.position(mDestinationLatLng);
             map.addMarker(destinationMarker);
-//            for(int i = 0; i < mPolyOptions.size();i++) {
-//                Polyline line = map.addPolyline(mPolyOptions.get(i));
-//            }
+
                 LatLngBounds.Builder builder = new LatLngBounds.Builder();
                 builder.include(mCurrentLatLng);
                 builder.include(mDestinationLatLng);
@@ -171,7 +175,7 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
             Log.d("PlanTrip","LatLngs are null bitch");
         }
 
-        //mPolyOptions.clear();
+        mPolyOptions.clear();
     }
 
     @Override
@@ -180,7 +184,13 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
         View v = inflater.inflate(R.layout.plan_trip_fragment, container, false);
 
         etDesinationLocation = (EditText) v.findViewById(R.id.etDestionationLocation);
-        etNumberOfPassengers = (EditText) v.findViewById(R.id.etNumPassengers);
+        ivInvitePassenger = (ImageView) v.findViewById(R.id.ivAddPassenger);
+        ivInvitePassenger.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Dialogfragment?
+            }
+        });
 
         bSetTrip = (Button) v.findViewById(R.id.bSetTrip);
         bSetTrip.setOnClickListener(new View.OnClickListener() {
@@ -407,7 +417,6 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
             super.onPostExecute(result);
             try{
 
-                // Log.d("PlanTrip",result.toString());
                 JSONObject jsonObj = new JSONObject(result.toString());
                 JSONArray routesJSONArray = jsonObj.getJSONArray("routes");
                 JSONObject beforeLegsJSONObject = routesJSONArray.getJSONObject(0);
@@ -419,83 +428,28 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
                 //  longInfo(stepsJSONArray.toString());
 
                 List<LatLng> test = new ArrayList<>();
-                ArrayList<PolylineOptions> options = new ArrayList<>();
                 map.clear();
                 for(int i = 0; i < stepsJSONArray.length(); i++){
-                    options.clear();
                     JSONObject object = stepsJSONArray.getJSONObject(i);
                     JSONObject polyLineObject = object.getJSONObject("polyline");
                     String encodedPoly = polyLineObject.getString("points");//Holds the code for the polyline (String)
                     test = decodePoly(encodedPoly);
                     //Todo: Maybe create a separate asynctask to add latlngs on separate thread?
+                    PolylineOptions options1;
                     for(int j = 0; j < test.size();j++){
 
-                        PolylineOptions options1;
                         if(j != test.size() -1) {
-                            LatLng startLocation = test.get(j);
-                            LatLng nextLocation = test.get(j + 1);
-                            options1 = new PolylineOptions().add(startLocation, nextLocation).width(5).color(Color.GREEN).geodesic(true);
-                            map.addPolyline(options1);
+
+                            options1 = new PolylineOptions().add(test.get(j), test.get(j + 1)).width(5).color(Color.GREEN).geodesic(true);
                         }else{
-                            LatLng startLocation = test.get(j);
-                            LatLng nextLocation = test.get(j);
-                            options1 = new PolylineOptions().add(startLocation, nextLocation).width(5).color(Color.GREEN).geodesic(true);
-                            map.addPolyline(options1);
-
+                            options1 = new PolylineOptions().add(test.get(j), test.get(j)).width(5).color(Color.GREEN).geodesic(true);
                         }
-
+                        mPolyOptions.add(options1);
                     }
-//                    dialog.dismiss();
-//                    updateUI();
-                   // Log.d("PlanTrip","options size before:" + options.size());
-
-//                    Bundle args = new Bundle();
-//                    args.putParcelableArrayList("POLYLINES",options);
-//
-//                    Intent intent = new Intent("com.action.getstepslatlng");
-//                    intent.putExtra("BUNDLE",args);
-//                    manager.sendBroadcast(intent);
-                    //options.clear();
-
-//                    if(options.size() == 500){
-//                        Bundle args = new Bundle();
-//                        args.putParcelableArrayList("POLYLINES",options);
-//
-//                        Intent intent = new Intent("com.action.getstepslatlng");
-//                        intent.putExtra("BUNDLE",args);
-//                        manager.sendBroadcast(intent);
-//                        options.clear();
-//                    }
-//                    Bundle args = new Bundle();
-//                    args.putParcelableArrayList("POLYLINES",options);
-//
-//                    Intent intent = new Intent("com.action.getstepslatlng");
-//                    intent.putExtra("BUNDLE",args);
-//                    manager.sendBroadcast(intent);
-                    // Log.d("PlanTrip","options size:" + options.size());
-//                    JSONObject start_location = object.getJSONObject("start_location");
-//                    JSONObject end_location = object.getJSONObject("end_location");
-//
-//                    String startLat = start_location.getString("lat");
-//                    String startLng = start_location.getString("lng");
-//
-//                    String endLat = end_location.getString("lat");
-//                    String endLng = end_location.getString("lng");
-//
-//                    Double startLatFinal = Double.valueOf(startLat);
-//                    Double startLngFinal = Double.valueOf(startLng);
-//
-//                    Double endLatFinal = Double.valueOf(endLat);
-//                    Double endLngFinal = Double.valueOf(endLng);
-//
-//                    LatLng startLocation = new LatLng(startLatFinal,startLngFinal);
-//                    LatLng endLocation = new LatLng(endLatFinal,endLngFinal);
-//
-//                    PolylineOptions options1 = new PolylineOptions().add(startLocation,endLocation).width(5).color(Color.GREEN).geodesic(true);
-//                    options.add(options1);
                 }
-                dialog.dismiss();
+
                 updateUI();
+                dialog.dismiss();
 
                 //Todo: Maybe broadcast data in for loop for each iteration. To relieve huge data.
 //                Bundle args = new Bundle();

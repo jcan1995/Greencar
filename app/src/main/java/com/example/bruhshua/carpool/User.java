@@ -14,18 +14,28 @@ public class User implements Serializable{
     private String number;
     private String email;
     private String password;
-    private String firstName;
-    private String lastName;
+//    private String firstName;
+//    private String lastName;
+    private String userName;
 
     public User(){}
 
-    public User(String number, String email, String password, String firstName, String lastName) {
+    public User(String number, String email, String password,String userName) {
 
         this.number = number;
         this.email = email;
         this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
+//        this.firstName = firstName;
+//        this.lastName = lastName;
+        this.userName = userName;
+    }
+
+    public User(String number, String email,String userName) {
+
+        this.number = number;
+        this.email = email;
+
+        this.userName = userName;
     }
 
     public String getPassword() {
@@ -52,19 +62,19 @@ public class User implements Serializable{
         this.email = email;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
+//    public String getFirstName() {
+//        return firstName;
+//    }
+//
+//    public void setFirstName(String firstName) {
+//        this.firstName = firstName;
+//    }
+//
+//    public String getLastName() {
+//        return lastName;
+//    }
+//
+//    public void setLastName(String lastName) {
+//        this.lastName = lastName;
+//    }
 }

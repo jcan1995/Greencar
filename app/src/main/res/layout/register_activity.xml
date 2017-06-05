@@ -42,6 +42,21 @@
             android:inputType="textPassword"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/user_name"
+            android:id="@+id/etUserName"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/phone_number"
+            android:id="@+id/etPhoneNumber"
+            android:inputType="phone"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"/>
 
     </LinearLayout>
     <TextView

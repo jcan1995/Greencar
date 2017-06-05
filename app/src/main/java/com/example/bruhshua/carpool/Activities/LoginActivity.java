@@ -51,11 +51,12 @@ public class LoginActivity extends Activity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.login_activity);
         mAuth = FirebaseAuth.getInstance();
-        if(mAuth.getCurrentUser() != null){
-            Intent i = new Intent(getApplicationContext(), MainActivity.class);
-            i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
-            startActivity(i);
-        }
+        //Todo: Uncomment below, this is just for texting
+//        if(mAuth.getCurrentUser() != null){
+//            Intent i = new Intent(getApplicationContext(), MainActivity.class);
+//            i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
+//            startActivity(i);
+//        }
 
     }
 

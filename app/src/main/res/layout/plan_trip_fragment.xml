@@ -8,48 +8,53 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@color/white">
+        android:background="@color/white"
+     >
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-        <RelativeLayout
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/ic_add_passenger"
+            android:layout_margin="8dp"
+            android:id="@+id/ivAddPassenger"
+            />
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:paddingTop="8dp">
+            android:layout_height="wrap_content"
+            android:text="Invite Passenger"
+            android:layout_gravity="center"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            />
 
-            <Button
-                android:id="@+id/bSetTrip"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="16dp"
-                android:layout_alignParentLeft="true"
-                android:elevation="0dp"
-                android:background="@color/colorPrimary"
-                android:text="Set Trip"
-                android:textColor="@color/white"/>
+    </LinearLayout>
 
-            <EditText
-                android:id="@+id/etNumPassengers"
-                android:layout_width="wrap_content"
-                android:layout_marginRight="16dp"
-                android:inputType="numberDecimal"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:hint="# Passengers" />
-
-        </RelativeLayout>
 
         <EditText
             android:id="@+id/etDestionationLocation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:inputType="textPostalAddress"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            android:inputType="textPostalAddress"
             android:hint="Destination Location" />
 
-    </LinearLayout>
 
+    <Button
+        android:id="@+id/bSetTrip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:elevation="0dp"
+        android:background="@color/colorPrimary"
+        android:text="Set Trip"
+        android:textColor="@color/white"/>
+    </LinearLayout>
 
     <fragment
         android:layout_width="match_parent"
