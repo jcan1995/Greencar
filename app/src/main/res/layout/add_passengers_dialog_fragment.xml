@@ -20,8 +20,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Find Passenger"
+            android:layout_marginLeft="16dp"
+            android:id="@+id/etPassenger"
             android:textStyle="bold"
-            android:gravity="center"
+            android:paddingLeft="16dp"
+            android:gravity="left"
             />
 
     </LinearLayout>
@@ -29,7 +32,8 @@
 
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:id="@+id/listView">
 
     </ListView>
 

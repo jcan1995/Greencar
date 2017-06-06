@@ -14,20 +14,19 @@ public class User implements Serializable{
     private String number;
     private String email;
     private String password;
-//    private String firstName;
-//    private String lastName;
     private String userName;
+    private String profilePictureUrl;
+    private String localProfilePictureUrl;
 
     public User(){}
 
-    public User(String number, String email, String password,String userName) {
+    public User(String number, String email, String userName, String profilePictureUrl, String localProfilePictureUrl) {
 
         this.number = number;
         this.email = email;
-        this.password = password;
-//        this.firstName = firstName;
-//        this.lastName = lastName;
+        this.profilePictureUrl = profilePictureUrl;
         this.userName = userName;
+        this.localProfilePictureUrl = localProfilePictureUrl;
     }
 
     public User(String number, String email,String userName) {
@@ -61,19 +60,28 @@ public class User implements Serializable{
     public void setEmail(String email) {
         this.email = email;
     }
-//    public String getFirstName() {
-//        return firstName;
-//    }
-//
-//    public void setFirstName(String firstName) {
-//        this.firstName = firstName;
-//    }
-//
-//    public String getLastName() {
-//        return lastName;
-//    }
-//
-//    public void setLastName(String lastName) {
-//        this.lastName = lastName;
-//    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public String getLocalProfilePictureUrl() {
+        return localProfilePictureUrl;
+    }
+
+    public void setLocalProfilePictureUrl(String localProfilePictureUrl) {
+        this.localProfilePictureUrl = localProfilePictureUrl;
+    }
 }
