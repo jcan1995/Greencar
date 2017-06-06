@@ -188,7 +188,10 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
         ivInvitePassenger.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Dialogfragment?
+
+                AddPassengersDialogFragment addPassengersDialogFragment = AddPassengersDialogFragment.newInstance();
+                addPassengersDialogFragment.show(getActivity().getFragmentManager(),"");
+
             }
         });
 
