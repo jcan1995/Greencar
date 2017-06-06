@@ -54,6 +54,7 @@ public class RegisterActivity extends Activity{
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase database;
     private DatabaseReference users_ref;
+
     private final int SELECT_IMAGE = 1234;
 
     private EditText etEmail;
@@ -191,7 +192,7 @@ public class RegisterActivity extends Activity{
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                                users_ref.child(key).child(userName).push().child("password").setValue(password);
+                                users_ref.child(key).push().child("password").setValue(password);
 
                             }
 
@@ -201,11 +202,11 @@ public class RegisterActivity extends Activity{
                             }
                         });
 
-                        Map<String, User> users = new HashMap<String, User>();
-                        users.put(userName,newUser);
+//                        Map<String, User> users = new HashMap<String, User>();
+//                        users.put(userName,newUser);
 
                         key = users_ref.push().getKey();
-                        users_ref.child(key).setValue(users);
+                        users_ref.child(key).setValue(newUser);
 
                         mStorageRef = mStorageRef.child("images/" +userName+ "/"+filename);
                         mStorageRef.putFile(selectedImage)
