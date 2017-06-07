@@ -53,14 +53,12 @@ public class UsersListViewAdapter extends BaseAdapter{
 
         User user = (User) getItem(position);
 
-        TextView tvUserName = (TextView) v.findViewById(R.id.etUserName);
+        TextView tvUserName = (TextView) v.findViewById(R.id.tvUserName);
         tvUserName.setText(user.getUserName());
 
         ImageView ivPicture = (ImageView) v.findViewById(R.id.ivUserImage);
        // ivPicture.setImageResource();
 
-
-
-        return null;
+        return v;
     }
 }

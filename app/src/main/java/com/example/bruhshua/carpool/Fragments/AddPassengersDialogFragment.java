@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.example.bruhshua.carpool.Adapters.UsersListViewAdapter;
 import com.example.bruhshua.carpool.R;
 import com.example.bruhshua.carpool.User;
 import com.google.firebase.database.ChildEventListener;
@@ -22,6 +23,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,8 +36,10 @@ public class AddPassengersDialogFragment extends DialogFragment {
 
     private FirebaseDatabase database;
     private DatabaseReference users_ref;
-    private Map<String, User> users = new HashMap<>();
-
+   // private Map<String, User> users = new HashMap<>();
+    private ArrayList<User> users = new ArrayList<>();
+    private UsersListViewAdapter mAdapter;
+    private ListView passengersListView;
     public static AddPassengersDialogFragment newInstance(){
 
         AddPassengersDialogFragment addPassengersDialogFragment = new AddPassengersDialogFragment();
@@ -80,7 +84,7 @@ public class AddPassengersDialogFragment extends DialogFragment {
 //            }
 //        });
 
-        ListView passengersListView = (ListView) view.findViewById(R.id.listView);
+        passengersListView = (ListView) view.findViewById(R.id.listView);
         EditText etPassenger = (EditText) view.findViewById(R.id.etPassenger);
         etPassenger.addTextChangedListener(new TextWatcher() {
             @Override
@@ -93,22 +97,36 @@ public class AddPassengersDialogFragment extends DialogFragment {
             }
             @Override
             public void onTextChanged(final CharSequence s, int start, int before, int count) {
-//                Log.d("PlanTrip","onTextChanged");
-//                Log.d("PlanTrip","" + s );
+
                 users_ref.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Log.d("PlanTrip","onDataChange");
-
+                       // Log.d("PlanTrip","onDataChange");
+                        users.clear();
                         for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
-                            Log.d("PlanTrip","data: " + messageSnapshot.getValue());
+                           // Log.d("PlanTrip","data: " + messageSnapshot.getValue());
 
                             User user = messageSnapshot.getValue(User.class);
+                           // Log.d("PlanTrip","CharSequence: " + s);
 
                             if(user.getUserName().contains(s)){
+                                Log.d("PlanTrip","username has 's' character");
+
+                                users.add(user);
+                                updateUI();
+                                //User user = messageSnapshot.getValue(User.class);
+
+                            }else if(s == ""){
+                                Log.d("PlanTrip","1st");
+
+                            }else if(s == " "){
+                                Log.d("PlanTrip","2nd");
+
+                            }else if(s== "\n"){
+                                Log.d("PlanTrip","3rd");
 
                             }
-                            Log.d("PlanTrip","username: " + user.getUserName());
+                          //  Log.d("PlanTrip","username: " + user.getUserName());
 
 
                         }
@@ -147,5 +165,11 @@ public class AddPassengersDialogFragment extends DialogFragment {
         });
 
         return builder.create();
+    }
+
+    private void updateUI() {
+        mAdapter = new UsersListViewAdapter(users,getActivity().getApplicationContext());
+        passengersListView.setAdapter(mAdapter);
+
     }
 }
