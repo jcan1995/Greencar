@@ -14,12 +14,7 @@ import com.example.bruhshua.carpool.User;
 /**
  * Created by bruhshua on 5/21/17.
  */
-<<<<<<< HEAD
-//wassup
-//Hi danny
-=======
 
->>>>>>> master
 public class MyAccountFragment extends Fragment {
 
 
