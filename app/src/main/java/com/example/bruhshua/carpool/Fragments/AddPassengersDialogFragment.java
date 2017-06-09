@@ -11,7 +11,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Adapters.UsersListViewAdapter;
 import com.example.bruhshua.carpool.R;
@@ -40,6 +42,8 @@ public class AddPassengersDialogFragment extends DialogFragment {
     private ArrayList<User> users = new ArrayList<>();
     private UsersListViewAdapter mAdapter;
     private ListView passengersListView;
+    private ImageView ivAddPassenger;
+
     public static AddPassengersDialogFragment newInstance(){
 
         AddPassengersDialogFragment addPassengersDialogFragment = new AddPassengersDialogFragment();
@@ -55,103 +59,24 @@ public class AddPassengersDialogFragment extends DialogFragment {
 
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         final View view = inflater.inflate(R.layout.add_passengers_dialog_fragment,null);
-
-        database = FirebaseDatabase.getInstance();
-        users_ref = database.getReference("users");
-//        users_ref.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                Log.d("PlanTrip","onDataChange");
-//
-//                for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
-//                    Log.d("PlanTrip","data: " + messageSnapshot.getValue());
-//
-//                    User user = messageSnapshot.getValue(User.class);
-//
-//                    Log.d("PlanTrip","username: " + user.getUserName());
-//
-//
-//                }
-//
-//
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//                //Log.d("PlanTrip","onDataChange");
-//
-//            }
-//        });
-
         passengersListView = (ListView) view.findViewById(R.id.listView);
-        EditText etPassenger = (EditText) view.findViewById(R.id.etPassenger);
-        etPassenger.addTextChangedListener(new TextWatcher() {
+        final EditText etPassenger = (EditText) view.findViewById(R.id.etPassenger);
+
+        ivAddPassenger = (ImageView) view.findViewById(R.id.ivFindPassenger);
+        ivAddPassenger.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            public void onClick(View v) {
 
-//                Log.d("PlanTrip","beforeTextChanged");
-//                Log.d("PlanTrip","" + s );
-
-
-            }
-            @Override
-            public void onTextChanged(final CharSequence s, int start, int before, int count) {
-
-                users_ref.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                       // Log.d("PlanTrip","onDataChange");
-                        users.clear();
-                        for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
-                           // Log.d("PlanTrip","data: " + messageSnapshot.getValue());
-
-                            User user = messageSnapshot.getValue(User.class);
-                           // Log.d("PlanTrip","CharSequence: " + s);
-
-                            if(user.getUserName().contains(s)){
-                                Log.d("PlanTrip","username has 's' character");
-
-                                users.add(user);
-                                updateUI();
-                                //User user = messageSnapshot.getValue(User.class);
-
-                            }else if(s == ""){
-                                Log.d("PlanTrip","1st");
-
-                            }else if(s == " "){
-                                Log.d("PlanTrip","2nd");
-
-                            }else if(s== "\n"){
-                                Log.d("PlanTrip","3rd");
-
-                            }
-                          //  Log.d("PlanTrip","username: " + user.getUserName());
-
-
-                        }
-
-
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        //Log.d("PlanTrip","onDataChange");
-
-                    }
-                });
-
-
-
-            }
-            @Override
-            public void afterTextChanged(Editable s) {
-//                Log.d("PlanTrip","afterTextChanged");
-//                Log.d("PlanTrip","" + s );
-
+                if(!etPassenger.getText().toString().isEmpty()) {
+                    queryFirebase(etPassenger.getText().toString().trim());
+                }else{
+                    Toast.makeText(getActivity().getApplicationContext(),"Input Name.",Toast.LENGTH_SHORT).show();
+                }
             }
         });
+        database = FirebaseDatabase.getInstance();
+        users_ref = database.getReference("users");
+
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Invite Passengers");
@@ -165,6 +90,39 @@ public class AddPassengersDialogFragment extends DialogFragment {
         });
 
         return builder.create();
+    }
+
+    private void queryFirebase(final String userName) {
+
+        users_ref.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        users.clear();
+
+                        for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
+
+                            User user = messageSnapshot.getValue(User.class);
+
+                            if(user.getUserName().contains(userName)){
+                                Log.d("PlanTrip","username has 's' character");
+
+                                users.add(user);
+                                updateUI();
+
+                            }
+
+                        }
+
+
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.d("PlanTrip","onCancelled");
+
+                    }
+                });
     }
 
     private void updateUI() {
