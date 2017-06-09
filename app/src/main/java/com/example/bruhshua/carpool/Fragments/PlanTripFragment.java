@@ -26,12 +26,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.bruhshua.carpool.Adapters.UsersListViewAdapter;
 import com.example.bruhshua.carpool.Manifest;
 import com.example.bruhshua.carpool.R;
 import com.example.bruhshua.carpool.ServiceRequests.FetchAddressFromService;
 import com.example.bruhshua.carpool.ServiceRequests.FetchLocationFromService;
+import com.example.bruhshua.carpool.User;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -91,6 +94,8 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
     private Button bSetTrip;
     private ImageView ivInvitePassenger;
 
+    private ArrayList<User> passengers;
+    private ListView listview;
 
     private ArrayList<PolylineOptions> mPolyOptions = new ArrayList<>();
     //Todo: http request to get step by step latlngs to create route between points.
@@ -144,6 +149,8 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
         filter.addAction("com.action.getdestlatlng");
         filter.addAction("com.action.getdestaddress");
         filter.addAction("com.action.getstepslatlng");
+        filter.addAction("com.action.getpool");
+
         manager.registerReceiver(receiver,filter);
     }
 
@@ -182,6 +189,9 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.plan_trip_fragment, container, false);
+        passengers = new ArrayList<>();
+
+        listview = (ListView) v.findViewById(R.id.lvPassengerPool);
 
         etDesinationLocation = (EditText) v.findViewById(R.id.etDestionationLocation);
         ivInvitePassenger = (ImageView) v.findViewById(R.id.ivAddPassenger);
@@ -189,8 +199,16 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
             @Override
             public void onClick(View v) {
 
-                AddPassengersDialogFragment addPassengersDialogFragment = AddPassengersDialogFragment.newInstance();
-                addPassengersDialogFragment.show(getActivity().getFragmentManager(),"");
+                if(passengers != null) {
+                    Bundle args = new Bundle();
+                    args.putSerializable("POOL", passengers);
+
+                    Intent i = new Intent();
+                    i.putExtra("BUNDLE", args);
+
+                    AddPassengersDialogFragment addPassengersDialogFragment = AddPassengersDialogFragment.newInstance(i);
+                    addPassengersDialogFragment.show(getActivity().getFragmentManager(), "");
+                }
 
             }
         });
@@ -350,12 +368,28 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
                     dialog.dismiss();
                     break;
 
+                //Todo: Make another case where dialogFragment broadcasts a User object.
+                case "com.action.getpool":
+                   // passengers.add((User) bundle.getSerializable("USER"));
+
+                    passengers = (ArrayList<User>) bundle.getSerializable("POOL");
+                    updatePassengersView();
+                    break;
+
                 case "":
                     //Do something else, although shouldn't happen.
                     dialog.dismiss();
                     break;
             }
         }
+    }
+
+    private void updatePassengersView() {
+
+        UsersListViewAdapter mAdapter = new UsersListViewAdapter(passengers,getContext());
+        listview.setAdapter(mAdapter);
+
+
     }
 
     public class FetchRouteStepsFromService extends AsyncTask<Void,Void,StringBuilder> {

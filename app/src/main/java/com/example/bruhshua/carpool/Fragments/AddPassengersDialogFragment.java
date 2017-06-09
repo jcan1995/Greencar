@@ -3,13 +3,17 @@ package com.example.bruhshua.carpool.Fragments;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -27,6 +31,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,27 +45,53 @@ public class AddPassengersDialogFragment extends DialogFragment {
     private DatabaseReference users_ref;
    // private Map<String, User> users = new HashMap<>();
     private ArrayList<User> users = new ArrayList<>();
+    private ArrayList<User> bufferedPassengers = new ArrayList<>();
+
     private UsersListViewAdapter mAdapter;
     private ListView passengersListView;
-    private ImageView ivAddPassenger;
+    private ListView bufferedListView;
 
-    public static AddPassengersDialogFragment newInstance(){
+    private ImageView ivAddPassenger;
+    private EditText etPassenger;
+
+    private LocalBroadcastManager manager ;
+    private Intent i;
+
+    public static AddPassengersDialogFragment newInstance(Intent i){
 
         AddPassengersDialogFragment addPassengersDialogFragment = new AddPassengersDialogFragment();
         Bundle args = new Bundle();
-       // args.putSerializable("DATA",data);
+        args.putParcelable("INTENT",i);
         addPassengersDialogFragment.setArguments(args);
         return addPassengersDialogFragment;
     }
-
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         final View view = inflater.inflate(R.layout.add_passengers_dialog_fragment,null);
+        bufferedListView = (ListView) view.findViewById(R.id.lvBufferedPool);
+
+        manager = LocalBroadcastManager.getInstance(getActivity());
+        i = getArguments().getParcelable("INTENT");
+        Bundle bundle = i.getParcelableExtra("BUNDLE");
+
+        bufferedPassengers = (ArrayList<User>) bundle.getSerializable("POOL");
+        updatePool();
+
         passengersListView = (ListView) view.findViewById(R.id.listView);
-        final EditText etPassenger = (EditText) view.findViewById(R.id.etPassenger);
+        passengersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //Todo: Grab User, place into "pool"
+                bufferedPassengers.add(users.get(position));
+                updatePool();
+
+            }
+        });
+
+        etPassenger = (EditText) view.findViewById(R.id.etPassenger);
 
         ivAddPassenger = (ImageView) view.findViewById(R.id.ivFindPassenger);
         ivAddPassenger.setOnClickListener(new View.OnClickListener() {
@@ -74,6 +105,7 @@ public class AddPassengersDialogFragment extends DialogFragment {
                 }
             }
         });
+
         database = FirebaseDatabase.getInstance();
         users_ref = database.getReference("users");
 
@@ -85,6 +117,14 @@ public class AddPassengersDialogFragment extends DialogFragment {
         builder.setPositiveButton("Invite", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+
+                //Todo: Send Array list of users to fragment
+                Bundle args = new Bundle();
+                args.putSerializable("POOL",bufferedPassengers);
+
+                Intent i = new Intent("com.action.getpool");
+                i.putExtra("BUNDLE",args);
+                manager.sendBroadcast(i);
 
             }
         });
@@ -108,13 +148,8 @@ public class AddPassengersDialogFragment extends DialogFragment {
 
                                 users.add(user);
                                 updateUI();
-
                             }
-
                         }
-
-
-
                     }
 
                     @Override
@@ -129,5 +164,12 @@ public class AddPassengersDialogFragment extends DialogFragment {
         mAdapter = new UsersListViewAdapter(users,getActivity().getApplicationContext());
         passengersListView.setAdapter(mAdapter);
 
+    }
+
+    private void updatePool() {
+        if(bufferedPassengers != null) {
+            mAdapter = new UsersListViewAdapter(bufferedPassengers, getActivity().getApplicationContext());
+            bufferedListView.setAdapter(mAdapter);
+        }
     }
 }
