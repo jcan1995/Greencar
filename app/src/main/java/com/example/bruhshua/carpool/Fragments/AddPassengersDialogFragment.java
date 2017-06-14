@@ -3,13 +3,10 @@ package com.example.bruhshua.carpool.Fragments;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,8 +18,7 @@ import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Adapters.UsersListViewAdapter;
 import com.example.bruhshua.carpool.R;
-import com.example.bruhshua.carpool.User;
-import com.google.firebase.database.ChildEventListener;
+import com.example.bruhshua.carpool.Model.User;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -30,9 +26,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by bruhshua on 6/5/17.
@@ -78,6 +71,7 @@ public class AddPassengersDialogFragment extends DialogFragment {
         Bundle bundle = i.getParcelableExtra("BUNDLE");
 
         bufferedPassengers = (ArrayList<User>) bundle.getSerializable("POOL");
+
         updatePool();
 
         passengersListView = (ListView) view.findViewById(R.id.listView);
@@ -134,35 +128,49 @@ public class AddPassengersDialogFragment extends DialogFragment {
 
     private void queryFirebase(final String userName) {
 
-        users_ref.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        users.clear();
+        if(userName.equals(PlanTripFragment.getAuthUser().getUserName())){
+            Toast.makeText(getActivity(),"Ohhhh weeee that's you dummy!",Toast.LENGTH_SHORT).show();
 
-                        for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
+        }else {
+            users_ref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    users.clear();
 
-                            User user = messageSnapshot.getValue(User.class);
+                    Log.d("PlanTrip", "Autherusername: " + PlanTripFragment.getAuthUser().getUserName());
 
-                            if(user.getUserName().contains(userName)){
-                                Log.d("PlanTrip","username has 's' character");
+                    for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()) {
 
-                                users.add(user);
-                                updateUI();
-                            }
+                        User user = messageSnapshot.getValue(User.class);
+
+                        if (user.getUserName().contains(userName) && !PlanTripFragment.getAuthUser().getUserName().equals(user.getUserName())) {
+                            Log.d("PlanTrip", "username has 's' character");
+
+                            users.add(user);
+                            updateUI();
                         }
                     }
+                    // updateUI();
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.d("PlanTrip","onCancelled");
+                }
 
-                    }
-                });
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.d("PlanTrip", "onCancelled");
+
+                }
+            });
+        }
     }
 
     private void updateUI() {
-        mAdapter = new UsersListViewAdapter(users,getActivity().getApplicationContext());
-        passengersListView.setAdapter(mAdapter);
+        Log.d("PlanTrip","dialog updateUI");
+
+        //Meaning if the dialog is actually showing. This coincidentally gets fired off from the onDataChanged due to the new trip added.
+        if(getActivity() != null) {
+            mAdapter = new UsersListViewAdapter(users, getActivity().getApplicationContext());
+            passengersListView.setAdapter(mAdapter);
+        }
 
     }
 

@@ -36,6 +36,7 @@
         android:textStyle="bold"
         android:inputType="textPostalAddress"
         android:layout_marginLeft="16dp"
+        android:imeOptions="actionDone"
         android:layout_marginRight="16dp"
         android:hint="Destination Location" />
 

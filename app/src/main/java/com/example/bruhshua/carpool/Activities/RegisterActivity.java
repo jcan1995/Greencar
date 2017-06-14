@@ -1,16 +1,12 @@
 package com.example.bruhshua.carpool.Activities;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -24,14 +20,15 @@ import android.widget.Toast;
 
 import com.example.bruhshua.carpool.R;
 
-import com.example.bruhshua.carpool.User;
+import com.example.bruhshua.carpool.Model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -42,8 +39,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by bruhshua on 5/19/17.
@@ -82,6 +77,7 @@ public class RegisterActivity extends Activity{
         mStorageRef = FirebaseStorage.getInstance().getReference();
 
         database = FirebaseDatabase.getInstance();
+
         firebaseAuth = FirebaseAuth.getInstance(); //create FirebaseAuth object and get the instance
         users_ref = database.getReference("users");
 
@@ -97,7 +93,7 @@ public class RegisterActivity extends Activity{
             }
         });
         ivProfilePicture = (ImageView) findViewById(R.id.ivAddImage);
-        //ivA = (TextView) findViewById(R.id.tvAddPicture);
+
         ivProfilePicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -130,7 +126,7 @@ public class RegisterActivity extends Activity{
 
                     int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                     filepath = cursor.getString(columnIndex);
-                    filename = filepath.substring(filepath.lastIndexOf("/")+1);
+//                    filename = filepath.substring(filepath.lastIndexOf("/")+1);
                     Log.d("addPicTest","filename: " + filename);
 
                     cursor.close();
@@ -185,48 +181,76 @@ public class RegisterActivity extends Activity{
                     if (task.isSuccessful()) {
                         final String userName = etUserName.getText().toString();
                         String phoneNumber = etPhoneNumber.getText().toString();
+                        String key = users_ref.push().getKey();
 
-                        User newUser = new User(phoneNumber,email,userName,"images/" +userName+ "/"+filename,filepath);
+                        final User user = new User(email,userName,selectedImage.toString(),phoneNumber,key);
 
-                        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                        users_ref.child(key).setValue(user);
+                        UserProfileChangeRequest profileChangeRequest = new UserProfileChangeRequest.Builder()
+                                .setDisplayName(userName)
+                                .setPhotoUri(selectedImage)
+                                .build();
+
+                        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+                        firebaseUser.updateProfile(profileChangeRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
+                            public void onComplete(@NonNull Task<Void> task) {
+                                dialog.dismiss();
+                                Toast.makeText(getApplicationContext(), "Registration Successful.", Toast.LENGTH_SHORT).show();
 
-                                users_ref.child(key).push().child("password").setValue(password);
-
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
+                                Intent i = new Intent(getApplicationContext(),LoginActivity.class);
+                              //  i.putExtra("USER",user);
+                                startActivity(i);
 
                             }
                         });
 
-//                        Map<String, User> users = new HashMap<String, User>();
-//                        users.put(userName,newUser);
 
-                        key = users_ref.push().getKey();
-                        users_ref.child(key).setValue(newUser);
 
-                        mStorageRef = mStorageRef.child("images/" +userName+ "/"+filename);
-                        mStorageRef.putFile(selectedImage)
-                                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                    @Override
-                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                        Log.d("register_test","Success");
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Log.d("register_test","Failure");
 
-                                    }
-                                });
 
-                        dialog.dismiss();
-                        Toast.makeText(getApplicationContext(), "Registration Successful.", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(getApplicationContext(),LoginActivity.class));
+                        //New//
+//                        User newUser = new User(phoneNumber,email,userName,"images/" +userName+ "/"+filename,filepath);
+//
+//                        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+//                            @Override
+//                            public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//                                users_ref.child(key).push().child("password").setValue(password);
+//
+//                            }
+//
+//                            @Override
+//                            public void onCancelled(DatabaseError databaseError) {
+//
+//                            }
+//                        });
+//
+////                        Map<String, User> users = new HashMap<String, User>();
+////                        users.put(userName,newUser);
+//
+//                        key = users_ref.push().getKey();
+//                        users_ref.child(key).setValue(newUser);
+//
+//                        mStorageRef = mStorageRef.child("images/" +userName+ "/"+filename);
+//                        mStorageRef.putFile(selectedImage)
+//                                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//                                    @Override
+//                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                                        Log.d("register_test","Success");
+//                                    }
+//                                })
+//                                .addOnFailureListener(new OnFailureListener() {
+//                                    @Override
+//                                    public void onFailure(@NonNull Exception e) {
+//                                        Log.d("register_test","Failure");
+//
+//                                    }
+//                                });
+
+//                        dialog.dismiss();
+//                        Toast.makeText(getApplicationContext(), "Registration Successful.", Toast.LENGTH_SHORT).show();
+//                        startActivity(new Intent(getApplicationContext(),LoginActivity.class));
                         //Todo: add user to database
 
                     }else{

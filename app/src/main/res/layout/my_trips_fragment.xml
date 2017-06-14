@@ -4,9 +4,12 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
+
+    <ListView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="My Trips Fragment"/>
+        android:layout_height="match_parent"
+        android:id="@+id/my_trips_list_view">
+
+    </ListView>
 
 </LinearLayout>

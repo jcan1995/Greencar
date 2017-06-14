@@ -9,9 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.bruhshua.carpool.R;
-import com.example.bruhshua.carpool.User;
-
-import org.w3c.dom.Text;
+import com.example.bruhshua.carpool.Model.User;
 
 import java.util.ArrayList;
 
@@ -23,6 +21,7 @@ public class UsersListViewAdapter extends BaseAdapter{
 
     public ArrayList<User> users;
     public Context context;
+
     public UsersListViewAdapter(ArrayList<User> users, Context context){
         this.users = users;
         this.context = context;

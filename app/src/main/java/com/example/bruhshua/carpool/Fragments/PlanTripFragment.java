@@ -7,8 +7,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -30,11 +28,11 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Adapters.UsersListViewAdapter;
-import com.example.bruhshua.carpool.Manifest;
+import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.R;
 import com.example.bruhshua.carpool.ServiceRequests.FetchAddressFromService;
 import com.example.bruhshua.carpool.ServiceRequests.FetchLocationFromService;
-import com.example.bruhshua.carpool.User;
+import com.example.bruhshua.carpool.Model.User;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -46,13 +44,16 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -68,11 +69,12 @@ import java.util.List;
          Directions APIKEY = AIzaSyB0WPNPyjRxrwB7iyzVDcxwy4W2Gd-KmUA
      */
 
-//Todo: PRIORITY, obtain users current address from Location object.
-
+//Todo: Maybe update create new trip with some details in firebase. My trips will listen to that section for new items and will update its listview.
 public class PlanTripFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 101;
+
+    private static User authUser;
 
     private LocalBroadcastManager manager;
 
@@ -84,8 +86,10 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
     private Location mDestinationLocation;
 
     private LatLng mCurrentLatLng;
+
     private String currentAddress;
     private String destinationAddress;
+
     private LatLng mDestinationLatLng;
 
     private SupportMapFragment mSupportMapFragment;
@@ -99,12 +103,17 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
 
     private ArrayList<PolylineOptions> mPolyOptions = new ArrayList<>();
     //Todo: http request to get step by step latlngs to create route between points.
-    public static PlanTripFragment newInstance() {
+
+    public static PlanTripFragment newInstance(User user) {
         PlanTripFragment planTripFragment = new PlanTripFragment();
         Bundle args = new Bundle();
-        // args.put("DATA",DATA);
+        args.putSerializable("USER",user);
         planTripFragment.setArguments(args);
         return planTripFragment;
+    }
+
+    public static User getAuthUser() {
+        return authUser;
     }
 
     @Override
@@ -131,6 +140,7 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        this.authUser = (User) getArguments().getSerializable("USER");
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
                     .addConnectionCallbacks(this)
@@ -189,10 +199,11 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.plan_trip_fragment, container, false);
+
         passengers = new ArrayList<>();
-
+        passengers.add(authUser);
         listview = (ListView) v.findViewById(R.id.lvPassengerPool);
-
+        updatePassengersView();
         etDesinationLocation = (EditText) v.findViewById(R.id.etDestionationLocation);
         ivInvitePassenger = (ImageView) v.findViewById(R.id.ivAddPassenger);
         ivInvitePassenger.setOnClickListener(new View.OnClickListener() {
@@ -223,8 +234,10 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
                     dialog.setMessage("Please wait...");
                     dialog.show();
 
+                    destinationAddress = etDesinationLocation.getText().toString();
                     getDestinationAddress(etDesinationLocation.getText().toString());
                     getDirections(etDesinationLocation.getText().toString());// Just pass in the destination string since current address is initialized in onConnect interface method.
+                    Log.d("PlanTrip","After getDirections");
 
                 }else{
                     Toast.makeText(getActivity(), "Please Enter an Address.", Toast.LENGTH_SHORT).show();
@@ -386,9 +399,10 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
 
     private void updatePassengersView() {
 
-        UsersListViewAdapter mAdapter = new UsersListViewAdapter(passengers,getContext());
-        listview.setAdapter(mAdapter);
-
+        if(passengers != null && passengers.size() != 0) {
+            UsersListViewAdapter mAdapter = new UsersListViewAdapter(passengers, getContext());
+            listview.setAdapter(mAdapter);
+        }
 
     }
 
@@ -454,6 +468,26 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
             super.onPostExecute(result);
             try{
 
+                float distance;
+
+                //Todo: Get Distance////////////////
+
+                JSONObject jsonObj2 = new JSONObject(result.toString());
+                JSONArray routesJSONArray2 = jsonObj2.getJSONArray("routes");
+                JSONObject beforeLegsJSONObject2 = routesJSONArray2.getJSONObject(0);
+                JSONArray legsJSONArray2 = beforeLegsJSONObject2.getJSONArray("legs");
+                JSONObject legsObject = legsJSONArray2.getJSONObject(0);
+
+                JSONObject distanceObject = legsObject.getJSONObject("distance");
+
+                String milesString = distanceObject.getString("text");
+                String milestrimmed = milesString.replaceAll(" mi","");
+                float miles = Float.parseFloat(milestrimmed);
+
+
+                //Todo: Get Distance////////////////
+
+             //   longInfo(result.toString());
                 JSONObject jsonObj = new JSONObject(result.toString());
                 JSONArray routesJSONArray = jsonObj.getJSONArray("routes");
                 JSONObject beforeLegsJSONObject = routesJSONArray.getJSONObject(0);
@@ -462,7 +496,7 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
                 JSONObject beforeStepsJSONObject = legsJSONArray.getJSONObject(0);
                 JSONArray stepsJSONArray = beforeStepsJSONObject.getJSONArray("steps");
 
-                //  longInfo(stepsJSONArray.toString());
+                //longInfo(stepsJSONArray.toString());
 
                 List<LatLng> test = new ArrayList<>();
                 map.clear();
@@ -484,8 +518,11 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
                         mPolyOptions.add(options1);
                     }
                 }
-
+                addNewTrip(miles,currentAddress);
                 updateUI();
+                //Todo: get distance data from JSON, pass into addNewTrip function.
+                //Get data, upload to firebase;
+
                 dialog.dismiss();
 
                 //Todo: Maybe broadcast data in for loop for each iteration. To relieve huge data.
@@ -533,5 +570,46 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
 
 
 
+    }
+
+    private void addNewTrip(float miles, String currentAddress) {
+
+        //Todo: Add tripdetails into every passengers "My trips tree in firebase"
+        // Iterate through all passengers to get their usernames and add trip into their field
+
+        int numPeople = passengers.size(); //Passengers should also include the driver.
+        float points = miles;
+
+        final TripDetails tripDetails = new TripDetails(numPeople,miles,points,currentAddress,destinationAddress);
+
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference users_ref = database.getReference("users");
+
+        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
+
+                    User user = messageSnapshot.getValue(User.class);
+
+                    for(int i = 0; i < passengers.size();i++){
+
+                        if(user.getUserName().equals(passengers.get(i).getUserName())){
+
+                            users_ref.child(messageSnapshot.getKey()).child("trips").push().setValue(tripDetails);
+
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 }

@@ -18,11 +18,18 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.w3c.dom.Text;
 
@@ -39,6 +46,9 @@ public class LoginActivity extends Activity {
     private ProgressDialog Dialog;
     private FirebaseAuth mAuth;
 
+    private FirebaseDatabase database;
+    private DatabaseReference users_ref;
+
 
     @Override
     public void onBackPressed() {
@@ -50,13 +60,16 @@ public class LoginActivity extends Activity {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.login_activity);
+        database = FirebaseDatabase.getInstance();
+        users_ref = database.getReference("users");
+
         mAuth = FirebaseAuth.getInstance();
         //Todo: Uncomment below, this is just for texting
-        if(mAuth.getCurrentUser() != null){
-            Intent i = new Intent(getApplicationContext(), MainActivity.class);
-            i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
-            startActivity(i);
-        }
+//        if(mAuth.getCurrentUser() != null){
+//            Intent i = new Intent(getApplicationContext(), MainActivity.class);
+//            i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
+//            startActivity(i);
+//        }
 
     }
 
@@ -66,7 +79,7 @@ public class LoginActivity extends Activity {
         etEmail = (EditText) findViewById(R.id.etEmail);
         etPassword = (EditText) findViewById(R.id.etPassword);
 
-        String email = etEmail.getText().toString();
+        final String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString();
 
         if (!email.equals("") || !password.equals("")) {
@@ -80,11 +93,27 @@ public class LoginActivity extends Activity {
                     Dialog.dismiss();
                     if (task.isSuccessful()) {
                         Toast.makeText(getApplicationContext(), "Login Successful.", Toast.LENGTH_SHORT).show();
+                        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                for(DataSnapshot message: dataSnapshot.getChildren()){
+                                    User authUser = message.getValue(User.class);
+                                    if(email.equals(authUser.getEmail())){
 
-                        //Todo: Go to MainActivity in app.
-                        Intent i = new Intent(getApplicationContext(), MainActivity.class);
-                        i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
-                        startActivity(i);
+                                        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                                        i.putExtra("USER",authUser);
+                                        i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                        startActivity(i);
+
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                     } else {
                         Dialog.dismiss();
                         Toast.makeText(getApplicationContext(), "Login Failed.", Toast.LENGTH_SHORT).show();

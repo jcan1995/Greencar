@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.bruhshua.carpool.R;
-import com.example.bruhshua.carpool.User;
+import com.example.bruhshua.carpool.Model.User;
 
 
 /**

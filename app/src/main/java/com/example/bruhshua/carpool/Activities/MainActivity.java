@@ -1,25 +1,22 @@
 package com.example.bruhshua.carpool.Activities;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Fragments.MyAccountFragment;
 import com.example.bruhshua.carpool.Fragments.MyTripsFragment;
 import com.example.bruhshua.carpool.Fragments.PlanTripFragment;
+import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
-import com.example.bruhshua.carpool.User;
 
 /**
  * Created by bruhshua on 5/21/17.
@@ -29,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
+
     private NavigationView nvDrawer;
 
     private User user; //Todo:Get the current user using the application from firebase.
@@ -46,6 +44,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
+        //Intent i = getIntent().
+
+        //Uri is passed as a string!
+        user = (User) getIntent().getSerializableExtra("USER");
+
+        Log.d("Inside","username: " + user.getUserName());
 
         nvDrawer = (NavigationView) findViewById(R.id.navigationView);
         nvDrawer.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -57,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
                         //Pass in user data that is queried in MainActivity.
                         MyAccountFragment myAccountFragment = MyAccountFragment.newInstance(user);
+
                         getSupportFragmentManager()
                                 .beginTransaction()
                                 .replace(R.id.fragment_container,myAccountFragment)
@@ -65,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
                     case R.id.plan_trip:
 
-                        PlanTripFragment planTripFragment = PlanTripFragment.newInstance();
+                        PlanTripFragment planTripFragment = PlanTripFragment.newInstance(user);
                         getSupportFragmentManager()
                                 .beginTransaction()
                                 .replace(R.id.fragment_container,planTripFragment)
@@ -74,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
                     case R.id.my_trips:
 
-                        MyTripsFragment myTripsFragment = MyTripsFragment.newInstance();
+                        MyTripsFragment myTripsFragment = MyTripsFragment.newInstance(user);
                         getSupportFragmentManager()
                                 .beginTransaction()
                                 .replace(R.id.fragment_container,myTripsFragment)

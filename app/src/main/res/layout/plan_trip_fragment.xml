@@ -13,6 +13,7 @@
         class="com.google.android.gms.maps.SupportMapFragment"
         />
 
-    <include layout="@layout/set_destination_add_passengers_layout"/>
+    <include layout="@layout/set_destination_add_passengers_layout"
+        android:id="@+id/set_destination_view"/>
 
 </FrameLayout>
