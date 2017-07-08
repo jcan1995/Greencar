@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -69,10 +70,15 @@ import java.util.List;
          Directions APIKEY = AIzaSyB0WPNPyjRxrwB7iyzVDcxwy4W2Gd-KmUA
      */
 
-//Todo: Maybe update create new trip with some details in firebase. My trips will listen to that section for new items and will update its listview.
-public class PlanTripFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+//Todo: Switch add passengers view with details fragment.
+    public class PlanTripFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
+
+    private LinearLayout llSetTrip;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 101;
+
+    private TripDetails tripDetail;
+
 
     private static User authUser;
 
@@ -199,9 +205,11 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.plan_trip_fragment, container, false);
+       // llSetTrip = (LinearLayout) v.findViewById(R.id.set_destination_view);
 
         passengers = new ArrayList<>();
         passengers.add(authUser);
+
         listview = (ListView) v.findViewById(R.id.lvPassengerPool);
         updatePassengersView();
         etDesinationLocation = (EditText) v.findViewById(R.id.etDestionationLocation);
@@ -500,7 +508,9 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
 
                 List<LatLng> test = new ArrayList<>();
                 map.clear();
+
                 for(int i = 0; i < stepsJSONArray.length(); i++){
+
                     JSONObject object = stepsJSONArray.getJSONObject(i);
                     JSONObject polyLineObject = object.getJSONObject("polyline");
                     String encodedPoly = polyLineObject.getString("points");//Holds the code for the polyline (String)
@@ -515,9 +525,12 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
                         }else{
                             options1 = new PolylineOptions().add(test.get(j), test.get(j)).width(5).color(Color.GREEN).geodesic(true);
                         }
+
                         mPolyOptions.add(options1);
+
                     }
                 }
+
                 addNewTrip(miles,currentAddress);
                 updateUI();
                 //Todo: get distance data from JSON, pass into addNewTrip function.
@@ -580,7 +593,7 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
         int numPeople = passengers.size(); //Passengers should also include the driver.
         float points = miles;
 
-        final TripDetails tripDetails = new TripDetails(numPeople,miles,points,currentAddress,destinationAddress);
+       tripDetail = new TripDetails(numPeople,miles,points,currentAddress,destinationAddress);
 
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -598,9 +611,7 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
                     for(int i = 0; i < passengers.size();i++){
 
                         if(user.getUserName().equals(passengers.get(i).getUserName())){
-
-                            users_ref.child(messageSnapshot.getKey()).child("trips").push().setValue(tripDetails);
-
+                            users_ref.child(messageSnapshot.getKey()).child("trips").push().setValue(tripDetail);
                         }
                     }
                 }
@@ -611,5 +622,14 @@ public class PlanTripFragment extends Fragment implements OnMapReadyCallback, Go
 
             }
         });
+
+        //Todo: Populate details fragment and execute fragment transaction to show fragment on the map.
+       // llSetTrip.setVisibility(LinearLayout.GONE);
+        TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetail);
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.plan_trip_fragment_container,tripDetailsFragment)
+                .commit();
+
     }
 }

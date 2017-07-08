@@ -3,6 +3,7 @@
 
 <FrameLayout android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/plan_trip_fragment_container"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <fragment
@@ -13,7 +14,13 @@
         class="com.google.android.gms.maps.SupportMapFragment"
         />
 
+
+
+
     <include layout="@layout/set_destination_add_passengers_layout"
         android:id="@+id/set_destination_view"/>
+
+
+
 
 </FrameLayout>
