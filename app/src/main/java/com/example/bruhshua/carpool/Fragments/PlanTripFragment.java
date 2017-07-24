@@ -1,5 +1,6 @@
 package com.example.bruhshua.carpool.Fragments;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -29,6 +30,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Adapters.UsersListViewAdapter;
+import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
 import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.R;
 import com.example.bruhshua.carpool.ServiceRequests.FetchAddressFromService;
@@ -71,34 +73,27 @@ import java.util.List;
      */
 
 //Todo: Switch add passengers view with details fragment.
-    public class PlanTripFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+    public class PlanTripFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-
-    private LinearLayout llSetTrip;
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 101;
 
     private TripDetails tripDetail;
-
 
     private static User authUser;
 
     private LocalBroadcastManager manager;
 
     private ProgressDialog dialog;
-    private GoogleMap map;
     private GoogleApiClient mGoogleApiClient;
 
     private Location mCurrentLocation;
     private Location mDestinationLocation;
 
     private LatLng mCurrentLatLng;
+    private LatLng mDestinationLatLng;
 
     private String currentAddress;
     private String destinationAddress;
-
-    private LatLng mDestinationLatLng;
-
-    private SupportMapFragment mSupportMapFragment;
 
     private EditText etDesinationLocation;
     private Button bSetTrip;
@@ -106,9 +101,8 @@ import java.util.List;
 
     private ArrayList<User> passengers;
     private ListView listview;
-
+    private Callback callback;
     private ArrayList<PolylineOptions> mPolyOptions = new ArrayList<>();
-    //Todo: http request to get step by step latlngs to create route between points.
 
     public static PlanTripFragment newInstance(User user) {
         PlanTripFragment planTripFragment = new PlanTripFragment();
@@ -122,9 +116,16 @@ import java.util.List;
         return authUser;
     }
 
+    public interface Callback {
+        public void updateMap(MapUpdatePOJO mapUpdatePOJO);
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        if(context instanceof Callback){
+            callback = (Callback) context;
+        }
 
     }
 
@@ -154,6 +155,7 @@ import java.util.List;
                     .addApi(LocationServices.API)
                     .build();
         }
+
         initBroadcastReceiver();
 
     }
@@ -172,27 +174,20 @@ import java.util.List;
 
     public void updateUI(){
 
-        //Todo: Include step by step polylines to map.
+        //Todo: Construct MapUIUpdate POJO send through callback to TripMapFragment.
+        //POJO needs, "mPolyOptions, mDestinationLatLng, mCurrentLatLng"
        if(mCurrentLatLng != null && mDestinationLatLng != null) {
        // if(mPolyOptions != null) {
             Log.d("PlanTrip","Inside update uI");
            Log.d("PlanTrip","PolyOptions size: " + mPolyOptions.size());
 
-           for(int i = 0; i < mPolyOptions.size();i++){
-               map.addPolyline(mPolyOptions.get(i));
+           MapUpdatePOJO mapUpdatePOJO = new MapUpdatePOJO(mPolyOptions,mCurrentLatLng,mDestinationLatLng);
+           if(callback != null){
+               Log.d("PlanTrip","calling updateMap");
+               callback.updateMap(mapUpdatePOJO);
+           }else{
+               Log.d("updateMap","callback is null.");
            }
-            MarkerOptions destinationMarker = new MarkerOptions();
-            destinationMarker.position(mDestinationLatLng);
-            map.addMarker(destinationMarker);
-
-                LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                builder.include(mCurrentLatLng);
-                builder.include(mDestinationLatLng);
-
-            LatLngBounds bounds = builder.build();
-            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds,32);//32
-            map.animateCamera(cu);
-
 
         }else{
             Log.d("PlanTrip","LatLngs are null bitch");
@@ -205,7 +200,6 @@ import java.util.List;
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.plan_trip_fragment, container, false);
-       // llSetTrip = (LinearLayout) v.findViewById(R.id.set_destination_view);
 
         passengers = new ArrayList<>();
         passengers.add(authUser);
@@ -253,17 +247,6 @@ import java.util.List;
             }
         });
 
-        mSupportMapFragment = SupportMapFragment.newInstance();
-        FragmentManager fm = getFragmentManager();
-        mSupportMapFragment.getMapAsync(this);
-        if (!mSupportMapFragment.isAdded())
-            fm.beginTransaction().add(R.id.map_fragment, mSupportMapFragment).commit();
-
-        else if (mSupportMapFragment.isAdded())
-            fm.beginTransaction().hide(mSupportMapFragment).commit();
-        else
-            fm.beginTransaction().show(mSupportMapFragment).commit();
-
         return v;
     }
 
@@ -303,13 +286,6 @@ import java.util.List;
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        map = googleMap;
-
-       // checkPermissions();
-    }
-
-    @Override
     public void onConnected(@Nullable Bundle bundle) {
 
         if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -317,7 +293,7 @@ import java.util.List;
             //This method doesn't provide specific data that we need to use. Such as LatLng
             //Maybe we can use this method just for its UI.
 
-            map.setMyLocationEnabled(true);
+          //  map.setMyLocationEnabled(true);
             Log.d("PlanTrip","setMyLocationEnabled");
         } else {
             //Todo: Maybe show dialog that tells users why we need their location.
@@ -328,6 +304,10 @@ import java.util.List;
         mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
         if (mCurrentLocation != null) {
+
+            Log.d("current","lat:" + mCurrentLocation.getLatitude());
+            Log.d("current","lon:" + mCurrentLocation.getLongitude());
+
             dialog = new ProgressDialog(getActivity());
             dialog.setMessage("Please wait...");
             dialog.show();
@@ -377,10 +357,7 @@ import java.util.List;
                     mDestinationLatLng = bundle.getParcelable("DEST");
                     break;
                 case "com.action.getstepslatlng":
-                    //Do something
-                   // mPolyOptions = bundle.getParcelableArrayList("POLYLINES");
-                  //  Log.d("PlanTrip","polyoptionssize:" + mPolyOptions.size());
-                   // updateUI();
+
                     dialog.dismiss();
                     break;
 
@@ -507,7 +484,7 @@ import java.util.List;
                 //longInfo(stepsJSONArray.toString());
 
                 List<LatLng> test = new ArrayList<>();
-                map.clear();
+               // map.clear();
 
                 for(int i = 0; i < stepsJSONArray.length(); i++){
 
@@ -625,11 +602,11 @@ import java.util.List;
 
         //Todo: Populate details fragment and execute fragment transaction to show fragment on the map.
        // llSetTrip.setVisibility(LinearLayout.GONE);
-        TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetail);
-        getActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.plan_trip_fragment_container,tripDetailsFragment)
-                .commit();
+//        TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetail);
+//        getActivity().getSupportFragmentManager()
+//                .beginTransaction()
+//                .replace(R.id.plan_trip_fragment_container,tripDetailsFragment)
+//                .commit();
 
     }
 }

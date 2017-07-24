@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,8 @@ import android.view.MenuItem;
 import com.example.bruhshua.carpool.Fragments.MyAccountFragment;
 import com.example.bruhshua.carpool.Fragments.MyTripsFragment;
 import com.example.bruhshua.carpool.Fragments.PlanTripFragment;
+import com.example.bruhshua.carpool.Fragments.TripMapFragment;
+import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
 import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
 
@@ -22,7 +25,7 @@ import com.example.bruhshua.carpool.R;
  * Created by bruhshua on 5/21/17.
  */
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PlanTripFragment.Callback {
 
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
@@ -70,11 +73,16 @@ public class MainActivity extends AppCompatActivity {
 
                     case R.id.plan_trip:
 
-                        PlanTripFragment planTripFragment = PlanTripFragment.newInstance(user);
+                        TripMapFragment tripMapFragment = TripMapFragment.newInstance(user);
                         getSupportFragmentManager()
                                 .beginTransaction()
-                                .replace(R.id.fragment_container,planTripFragment)
+                                .replace(R.id.fragment_container,tripMapFragment)
                                 .commit();
+//                        PlanTripFragment planTripFragment = PlanTripFragment.newInstance(user);
+//                        getSupportFragmentManager()
+//                                .beginTransaction()
+//                                .replace(R.id.fragment_container,planTripFragment)
+//                                .commit();
                         break;
 
                     case R.id.my_trips:
@@ -119,5 +127,14 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void updateMap(MapUpdatePOJO mapUpdatePOJO) {
+
+        Log.d("MainActivity","inside updateMap");
+        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        tripMapFragment.updateMap(mapUpdatePOJO);
+
     }
 }
