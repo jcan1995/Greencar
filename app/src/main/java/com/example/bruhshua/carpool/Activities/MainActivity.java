@@ -18,6 +18,7 @@ import com.example.bruhshua.carpool.Fragments.MyTripsFragment;
 import com.example.bruhshua.carpool.Fragments.PlanTripFragment;
 import com.example.bruhshua.carpool.Fragments.TripMapFragment;
 import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
+import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
 
@@ -47,9 +48,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        //Intent i = getIntent().
-
-        //Uri is passed as a string!
         user = (User) getIntent().getSerializableExtra("USER");
 
         Log.d("Inside","username: " + user.getUserName());
@@ -130,11 +128,11 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     }
 
     @Override
-    public void updateMap(MapUpdatePOJO mapUpdatePOJO) {
+    public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails) {
 
         Log.d("MainActivity","inside updateMap");
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        tripMapFragment.updateMap(mapUpdatePOJO);
+        tripMapFragment.updateMap(mapUpdatePOJO,tripDetails);
 
     }
 }

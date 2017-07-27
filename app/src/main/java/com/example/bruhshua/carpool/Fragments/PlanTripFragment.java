@@ -117,7 +117,7 @@ import java.util.List;
     }
 
     public interface Callback {
-        public void updateMap(MapUpdatePOJO mapUpdatePOJO);
+        public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails);
     }
 
     @Override
@@ -184,7 +184,7 @@ import java.util.List;
            MapUpdatePOJO mapUpdatePOJO = new MapUpdatePOJO(mPolyOptions,mCurrentLatLng,mDestinationLatLng);
            if(callback != null){
                Log.d("PlanTrip","calling updateMap");
-               callback.updateMap(mapUpdatePOJO);
+               callback.updateMap(mapUpdatePOJO,tripDetail);
            }else{
                Log.d("updateMap","callback is null.");
            }
@@ -199,7 +199,7 @@ import java.util.List;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.plan_trip_fragment, container, false);
+        View v = inflater.inflate(R.layout.set_destination_add_passengers_layout, container, false);
 
         passengers = new ArrayList<>();
         passengers.add(authUser);

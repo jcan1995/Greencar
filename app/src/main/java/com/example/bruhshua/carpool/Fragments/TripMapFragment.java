@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
+import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
 import com.google.android.gms.common.ConnectionResult;
@@ -48,7 +49,7 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback,Goog
         return tripMapFragment;
     }
 
-    public void updateMap(MapUpdatePOJO mapUpdatePOJO){
+    public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails){
         Log.d("TripMapFragment","inside updateMap");
 
         if(mapUpdatePOJO.getmCurrentLatLng() != null && mapUpdatePOJO.getmDestinationLatLng() != null) {
@@ -69,6 +70,16 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback,Goog
             LatLngBounds bounds = builder.build();
             CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 32);//32
             map.animateCamera(cu);
+
+
+            //Todo: Replace PlanTripFragment with details.
+
+            TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetails);
+             getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.plan_trip_fragment_container,tripDetailsFragment)
+                .commit();
+
 
         }else{
             Log.d("TripMapFragment","latlngs are null");
