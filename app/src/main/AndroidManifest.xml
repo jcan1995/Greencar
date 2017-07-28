@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".Activities.LoginActivity">
+        <activity android:name=".Activities.SplashScreen">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -27,6 +27,7 @@
         <activity android:name=".Activities.RegisterActivity" android:label="Registration"/>
         <activity android:name=".Activities.ResetPasswordActivity" android:label="Reset Password"/>
         <activity android:name=".Activities.MainActivity" android:label="Carpool"/>
+        <activity android:name=".Activities.LoginActivity" android:label="Login"/>
 
 
         <meta-data

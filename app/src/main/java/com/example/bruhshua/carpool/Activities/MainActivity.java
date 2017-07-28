@@ -50,6 +50,13 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
         user = (User) getIntent().getSerializableExtra("USER");
 
+        TripMapFragment tripMapFragment = TripMapFragment.newInstance(user);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container,tripMapFragment)
+                .commit();
+
+
         Log.d("Inside","username: " + user.getUserName());
 
         nvDrawer = (NavigationView) findViewById(R.id.navigationView);
@@ -62,7 +69,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
                         //Pass in user data that is queried in MainActivity.
                         MyAccountFragment myAccountFragment = MyAccountFragment.newInstance(user);
-
                         getSupportFragmentManager()
                                 .beginTransaction()
                                 .replace(R.id.fragment_container,myAccountFragment)
@@ -76,11 +82,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                                 .beginTransaction()
                                 .replace(R.id.fragment_container,tripMapFragment)
                                 .commit();
-//                        PlanTripFragment planTripFragment = PlanTripFragment.newInstance(user);
-//                        getSupportFragmentManager()
-//                                .beginTransaction()
-//                                .replace(R.id.fragment_container,planTripFragment)
-//                                .commit();
                         break;
 
                     case R.id.my_trips:
