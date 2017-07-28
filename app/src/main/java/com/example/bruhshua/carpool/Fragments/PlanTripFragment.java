@@ -22,8 +22,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -96,7 +98,7 @@ import java.util.List;
     private String destinationAddress;
 
     private EditText etDesinationLocation;
-    private Button bSetTrip;
+    private ImageButton bSetTrip;
     private ImageView ivInvitePassenger;
 
     private ArrayList<User> passengers;
@@ -201,12 +203,18 @@ import java.util.List;
 
         View v = inflater.inflate(R.layout.set_destination_add_passengers_layout, container, false);
 
+//        InputMethodManager inputMethodManager =
+//                (InputMethodManager) getActivity().getSystemService(
+//                        Activity.INPUT_METHOD_SERVICE);
+//        inputMethodManager.hideSoftInputFromWindow(
+//                getActivity().getCurrentFocus().getWindowToken(), 0);
+
         passengers = new ArrayList<>();
         passengers.add(authUser);
 
         listview = (ListView) v.findViewById(R.id.lvPassengerPool);
         updatePassengersView();
-        etDesinationLocation = (EditText) v.findViewById(R.id.etDestionationLocation);
+        etDesinationLocation = (EditText) v.findViewById(R.id.etDestinationLocation);
         ivInvitePassenger = (ImageView) v.findViewById(R.id.ivAddPassenger);
         ivInvitePassenger.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -226,7 +234,7 @@ import java.util.List;
             }
         });
 
-        bSetTrip = (Button) v.findViewById(R.id.bSetTrip);
+        bSetTrip = (ImageButton) v.findViewById(R.id.bSetTrip);
         bSetTrip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

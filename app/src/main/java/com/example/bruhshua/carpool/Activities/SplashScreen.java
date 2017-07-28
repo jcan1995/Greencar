@@ -1,5 +1,6 @@
 package com.example.bruhshua.carpool.Activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,7 +20,7 @@ import com.google.firebase.database.ValueEventListener;
  * Created by bruhshua on 7/28/17.
  */
 
-public class SplashScreen extends AppCompatActivity {
+public class SplashScreen extends Activity {
 
     private FirebaseAuth firebaseAuth;
     private static int SPLASH_TIME_OUT = 2500;
@@ -28,7 +29,7 @@ public class SplashScreen extends AppCompatActivity {
 
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash_screen);
 
@@ -49,9 +50,10 @@ public class SplashScreen extends AppCompatActivity {
                                 User authUser = message.getValue(User.class);
                                 if(firebaseAuth.getCurrentUser().getEmail().equals(authUser.getEmail())){
 
+                                    SplashScreen.this.finish();
                                     Intent i = new Intent(getApplicationContext(), MainActivity.class);
                                     i.putExtra("USER",authUser);
-                                    i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                    //i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
                                     startActivity(i);
 
                                 }
@@ -64,6 +66,7 @@ public class SplashScreen extends AppCompatActivity {
                         }
                     });
                 }else{
+                    SplashScreen.this.finish();
                     Intent i = new Intent(getApplicationContext(), LoginActivity.class);
                     startActivity(i);
                 }

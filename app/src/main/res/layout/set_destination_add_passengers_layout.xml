@@ -3,60 +3,67 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@color/white"
     android:layout_margin="4dp"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="70dp"
+        android:layout_gravity="center|bottom"
+        android:fitsSystemWindows="true"
+        android:gravity="center|bottom"
+        android:orientation="horizontal"
+        android:paddingBottom="16dp"
+        android:visibility="visible">
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@mipmap/ic_add_passenger"
-            android:layout_margin="8dp"
-            android:id="@+id/ivAddPassenger"
-            />
-        <TextView
+        <EditText
+            android:id="@+id/etDestinationLocation"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Invite Passenger"
-            android:layout_gravity="center"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            />
+            android:layout_height="match_parent"
+            android:ems="1"
+            android:textColor="@color/black"
+            android:gravity="start"
+            android:paddingBottom="16dp"
+            android:imeOptions="actionDone"
+            android:paddingEnd="16dp"
+            android:hint="Where are you going?"
+            android:paddingStart="16dp"
+            android:paddingTop="16dp"
+            android:background="@color/white"
+            android:singleLine="true"
+            android:textSize="16sp" />
 
-    </LinearLayout>
+        <ImageButton
+            android:id="@+id/bSetTrip"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:background="@color/colorPrimary"
+            android:clickable="true"
+            android:hapticFeedbackEnabled="true"
+            android:paddingBottom="16dp"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:paddingTop="16dp"
+            android:src="@mipmap/ic_done_white_24dp" />
 
-    <EditText
-        android:id="@+id/etDestionationLocation"
-        android:layout_width="match_parent"
+
+    </RelativeLayout>
+    <ImageView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:inputType="textPostalAddress"
-        android:layout_marginLeft="16dp"
-        android:imeOptions="actionDone"
-        android:layout_marginRight="16dp"
-        android:hint="Destination Location" />
-
+        android:src="@mipmap/ic_add_passenger"
+        android:layout_margin="8dp"
+        android:id="@+id/ivAddPassenger"
+        />
 
     <ListView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:divider="@null"
+        android:dividerHeight="0dp"
         android:id="@+id/lvPassengerPool">
-
-
     </ListView>
 
-    <Button
-        android:id="@+id/bSetTrip"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:elevation="0dp"
-        android:background="@color/colorPrimary"
-        android:text="Set Trip"
-        android:textColor="@color/white"/>
 </LinearLayout>

@@ -1,5 +1,6 @@
 package com.example.bruhshua.carpool.Activities;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,6 +13,12 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 
 import com.example.bruhshua.carpool.Fragments.MyAccountFragment;
 import com.example.bruhshua.carpool.Fragments.MyTripsFragment;
@@ -44,9 +51,26 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onPause() {
+        super.onPause();
+
+        Log.d("lifecyle","onPause called");
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("lifecyle","onResume called");
+
+
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         user = (User) getIntent().getSerializableExtra("USER");
 
@@ -134,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         Log.d("MainActivity","inside updateMap");
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         tripMapFragment.updateMap(mapUpdatePOJO,tripDetails);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
     }
 }
