@@ -186,6 +186,7 @@ public class RegisterActivity extends Activity{
                         final User user = new User(email,userName,selectedImage.toString(),phoneNumber,key);
 
                         users_ref.child(key).setValue(user);
+
                         UserProfileChangeRequest profileChangeRequest = new UserProfileChangeRequest.Builder()
                                 .setDisplayName(userName)
                                 .setPhotoUri(selectedImage)

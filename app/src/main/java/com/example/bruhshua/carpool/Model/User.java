@@ -21,7 +21,6 @@ public class User implements Serializable{
     private String localProfilePictureUrl;
     private HashMap<String,TripDetails> trips;
     private String photoUrl;
-
     private String key;
 
 

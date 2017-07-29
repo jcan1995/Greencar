@@ -29,6 +29,8 @@ import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
 import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 /**
  * Created by bruhshua on 5/21/17.
@@ -43,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     private NavigationView nvDrawer;
 
     private User user; //Todo:Get the current user using the application from firebase.
+    private FirebaseUser firebaseUser;
     private ProgressDialog dialog;
 
 
@@ -80,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         toolBar = (Toolbar) findViewById(R.id.toolBar); //initialize toolbar
         setSupportActionBar(toolBar); //add toolbar to application
 
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         user = (User) getIntent().getSerializableExtra("USER");
 
         TripMapFragment tripMapFragment = TripMapFragment.newInstance(user);
@@ -90,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
 
         Log.d("Inside","username: " + user.getUserName());
+        Log.d("PhotoUrl: ",user.getPhotoUrl());
+        Log.d("FirebaseUser: ",firebaseUser.getPhotoUrl().toString());
 
         nvDrawer = (NavigationView) findViewById(R.id.navigationView);
         nvDrawer.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
