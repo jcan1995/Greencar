@@ -39,6 +39,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.IOException;
+import java.net.URI;
 
 /**
  * Created by bruhshua on 5/19/17.
@@ -126,7 +127,8 @@ public class RegisterActivity extends Activity{
 
                     int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                     filepath = cursor.getString(columnIndex);
-//                    filename = filepath.substring(filepath.lastIndexOf("/")+1);
+                    Log.d("addPicTest","filepath: " + filepath);
+                    filename = filepath.substring(filepath.lastIndexOf("/")+1);
                     Log.d("addPicTest","filename: " + filename);
 
                     cursor.close();
@@ -176,83 +178,91 @@ public class RegisterActivity extends Activity{
 
         firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                 @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
+                public void onComplete(@NonNull final Task<AuthResult> task) {
 
                     if (task.isSuccessful()) {
                         final String userName = etUserName.getText().toString();
-                        String phoneNumber = etPhoneNumber.getText().toString();
-                        String key = users_ref.push().getKey();
+                        final String phoneNumber = etPhoneNumber.getText().toString();
+                        final String key = users_ref.push().getKey();
 
-                        final User user = new User(email,userName,selectedImage.toString(),phoneNumber,key);
+                        mStorageRef = mStorageRef.child("images/" +userName+ "/"+filename);
+                        mStorageRef.putFile(selectedImage)
+                                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                       // dialog.dismiss();
+                                        @SuppressWarnings("VisibleForTests")
+                                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
 
-                        users_ref.child(key).setValue(user);
+                                        final User user = new User(email,userName,downloadUrl.toString(),phoneNumber,key);
+                                        users_ref.child(key).setValue(user);
 
-                        UserProfileChangeRequest profileChangeRequest = new UserProfileChangeRequest.Builder()
-                                .setDisplayName(userName)
-                                .setPhotoUri(selectedImage)
-                                .build();
+                                        UserProfileChangeRequest profileChangeRequest = new UserProfileChangeRequest.Builder()
+                                                .setDisplayName(userName)
+                                                .setPhotoUri(selectedImage)
+                                                .build();
 
-                        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-                        firebaseUser.updateProfile(profileChangeRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                dialog.dismiss();
-                                Toast.makeText(getApplicationContext(), "Registration Successful.", Toast.LENGTH_SHORT).show();
+                                        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+                                        firebaseUser.updateProfile(profileChangeRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
 
-                                Intent i = new Intent(getApplicationContext(),LoginActivity.class);
-                              //  i.putExtra("USER",user);
-                                startActivity(i);
+                                            }
+                                        });
 
-                            }
-                        });
+                                        dialog.dismiss();
 
+                                        Log.d("downloadUrl: ", downloadUrl.toString());
+                                        Toast.makeText(getApplicationContext(), "Registration Successful.", Toast.LENGTH_SHORT).show();
+                                        Intent i = new Intent(getApplicationContext(),LoginActivity.class);
+                                        startActivity(i);
 
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
 
-
-
-                        //New//
-//                        User newUser = new User(phoneNumber,email,userName,"images/" +userName+ "/"+filename,filepath);
+                                    }
+                                });
+//                        final User user = new User(email,userName,selectedImage.toString(),phoneNumber,key);
 //
-//                        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+//                        users_ref.child(key).setValue(user);
+//
+//                        UserProfileChangeRequest profileChangeRequest = new UserProfileChangeRequest.Builder()
+//                                .setDisplayName(userName)
+//                                .setPhotoUri(selectedImage)
+//                                .build();
+//
+//                        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+//                        firebaseUser.updateProfile(profileChangeRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
 //                            @Override
-//                            public void onDataChange(DataSnapshot dataSnapshot) {
-//
-//                                users_ref.child(key).push().child("password").setValue(password);
-//
-//                            }
-//
-//                            @Override
-//                            public void onCancelled(DatabaseError databaseError) {
+//                            public void onComplete(@NonNull Task<Void> task) {
 //
 //                            }
 //                        });
-//
-////                        Map<String, User> users = new HashMap<String, User>();
-////                        users.put(userName,newUser);
-//
-//                        key = users_ref.push().getKey();
-//                        users_ref.child(key).setValue(newUser);
-//
-//                        mStorageRef = mStorageRef.child("images/" +userName+ "/"+filename);
+
+//                        mStorageRef = mStorageRef.child("images/" +userName+ "/"+"profile_picture");
 //                        mStorageRef.putFile(selectedImage)
 //                                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
 //                                    @Override
 //                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-//                                        Log.d("register_test","Success");
+//                                        dialog.dismiss();
+//                                        @SuppressWarnings("VisibleForTests")
+//                                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+//                                        Log.d("downloadUrl: ", downloadUrl.toString());
+//                                        Toast.makeText(getApplicationContext(), "Registration Successful.", Toast.LENGTH_SHORT).show();
+//                                        Intent i = new Intent(getApplicationContext(),LoginActivity.class);
+//                                        startActivity(i);
+//
 //                                    }
 //                                })
 //                                .addOnFailureListener(new OnFailureListener() {
 //                                    @Override
 //                                    public void onFailure(@NonNull Exception e) {
-//                                        Log.d("register_test","Failure");
 //
 //                                    }
 //                                });
-
-//                        dialog.dismiss();
-//                        Toast.makeText(getApplicationContext(), "Registration Successful.", Toast.LENGTH_SHORT).show();
-//                        startActivity(new Intent(getApplicationContext(),LoginActivity.class));
-                        //Todo: add user to database
 
                     }else{
                         dialog.dismiss();

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
@@ -23,7 +24,7 @@ import com.google.firebase.database.ValueEventListener;
 public class SplashScreen extends Activity {
 
     private FirebaseAuth firebaseAuth;
-    private static int SPLASH_TIME_OUT = 2500;
+    private static int SPLASH_TIME_OUT = 1500;
     private DatabaseReference users_ref;
     private FirebaseDatabase database;
 
@@ -40,24 +41,27 @@ public class SplashScreen extends Activity {
             public void run() {
 
                 if(firebaseAuth.getCurrentUser() != null){
+
                     database = FirebaseDatabase.getInstance();
                     users_ref = database.getReference("users");
 
                     users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
+
                             for(DataSnapshot message: dataSnapshot.getChildren()){
                                 User authUser = message.getValue(User.class);
+
                                 if(firebaseAuth.getCurrentUser().getEmail().equals(authUser.getEmail())){
 
-                                    SplashScreen.this.finish();
+                                    finish();
                                     Intent i = new Intent(getApplicationContext(), MainActivity.class);
                                     i.putExtra("USER",authUser);
-                                    //i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
                                     startActivity(i);
 
                                 }
                             }
+
                         }
 
                         @Override
@@ -66,13 +70,13 @@ public class SplashScreen extends Activity {
                         }
                     });
                 }else{
-                    SplashScreen.this.finish();
+
+                    finish();
                     Intent i = new Intent(getApplicationContext(), LoginActivity.class);
                     startActivity(i);
                 }
 
             }
         },SPLASH_TIME_OUT);
-
     }
 }

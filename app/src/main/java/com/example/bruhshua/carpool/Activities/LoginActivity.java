@@ -62,15 +62,7 @@ public class LoginActivity extends Activity {
         setContentView(R.layout.login_activity);
         database = FirebaseDatabase.getInstance();
         users_ref = database.getReference("users");
-
         mAuth = FirebaseAuth.getInstance();
-        //Todo: Uncomment below, this is just for texting
-//        if(mAuth.getCurrentUser() != null){
-//            Intent i = new Intent(getApplicationContext(), MainActivity.class);
-//            i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
-//            startActivity(i);
-//        }
-
     }
 
 
@@ -99,10 +91,9 @@ public class LoginActivity extends Activity {
                                 for(DataSnapshot message: dataSnapshot.getChildren()){
                                     User authUser = message.getValue(User.class);
                                     if(email.equals(authUser.getEmail())){
-
+                                        finish();
                                         Intent i = new Intent(getApplicationContext(), MainActivity.class);
                                         i.putExtra("USER",authUser);
-                                        i.setFlags(i.getFlags() | Intent.FLAG_ACTIVITY_NO_HISTORY);
                                         startActivity(i);
 
                                     }

@@ -1,25 +1,19 @@
 package com.example.bruhshua.carpool.Activities;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Fragments.MyAccountFragment;
 import com.example.bruhshua.carpool.Fragments.MyTripsFragment;
@@ -46,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
     private User user; //Todo:Get the current user using the application from firebase.
     private FirebaseUser firebaseUser;
+    private FirebaseAuth firebaseAuth;
+
     private ProgressDialog dialog;
 
 
@@ -84,6 +80,8 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         setSupportActionBar(toolBar); //add toolbar to application
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        firebaseAuth = FirebaseAuth.getInstance();
+
         user = (User) getIntent().getSerializableExtra("USER");
 
         TripMapFragment tripMapFragment = TripMapFragment.newInstance(user);
@@ -93,9 +91,9 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                 .commit();
 
 
-        Log.d("Inside","username: " + user.getUserName());
-        Log.d("PhotoUrl: ",user.getPhotoUrl());
-        Log.d("FirebaseUser: ",firebaseUser.getPhotoUrl().toString());
+//        Log.d("Inside","username: " + user.getUserName());
+//        Log.d("PhotoUrl: ",user.getDownloadUrl());
+//        Log.d("FirebaseUser: ",firebaseUser.getPhotoUrl().toString());
 
         nvDrawer = (NavigationView) findViewById(R.id.navigationView);
         nvDrawer.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -131,6 +129,9 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                                 .commit();
                         break;
 
+                    case R.id.log_out:
+                        logout();
+                        break;
                     default:
 
                         MyAccountFragment fragment1 = MyAccountFragment.newInstance(user);
@@ -155,6 +156,20 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         actionBarDrawerToggle.syncState();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+    }
+
+    private void logout() {
+        firebaseAuth.signOut();
+        if(firebaseAuth.getCurrentUser() == null){
+            finish();
+            Intent i = new Intent(MainActivity.this,LoginActivity.class);
+            startActivity(i);
+            Toast.makeText(getApplicationContext(),"Signed Out Successfully",
+                    Toast.LENGTH_LONG).show();
+        }else {
+            Toast.makeText(getApplicationContext(),"Could not sign out, please try again",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override

@@ -1,10 +1,6 @@
 package com.example.bruhshua.carpool.Model;
 
-import android.location.Location;
-import android.net.Uri;
-
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -20,7 +16,7 @@ public class User implements Serializable{
     private String profilePictureUrl;
     private String localProfilePictureUrl;
     private HashMap<String,TripDetails> trips;
-    private String photoUrl;
+    private String downloadUrl;
     private String key;
 
 
@@ -46,16 +42,16 @@ public class User implements Serializable{
         this.trips = tripDetails;
     }
 
-    public User(String email, String displayName, String photoUrl) {
+    public User(String email, String displayName, String downloadUrl) {
         this.email = email;
         this.userName = displayName;
-        this.photoUrl = photoUrl;
+        this.downloadUrl = downloadUrl;
     }
 
-    public User(String email, String displayName, String photoUrl,String phoneNumber,String key) {
+    public User(String email, String displayName, String downloadUrl, String phoneNumber, String key) {
         this.email = email;
         this.userName = displayName;
-        this.photoUrl = photoUrl;
+        this.downloadUrl = downloadUrl;
         this.number = phoneNumber;
         this.key = key;
 
@@ -66,12 +62,12 @@ public class User implements Serializable{
     }
 
 
-    public String getPhotoUrl() {
-        return photoUrl;
+    public String getDownloadUrl() {
+        return downloadUrl;
     }
 
-    public void setPhotoUrl(String photoUrl) {
-        this.photoUrl = photoUrl;
+    public void setDownloadUrl(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
     }
 
     public String getPassword() {

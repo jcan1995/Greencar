@@ -1,6 +1,8 @@
 package com.example.bruhshua.carpool.Adapters;
 
 import android.content.Context;
+import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +15,10 @@ import com.bumptech.glide.Glide;
 import com.example.bruhshua.carpool.R;
 import com.example.bruhshua.carpool.Model.User;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
@@ -56,17 +61,10 @@ public class UsersListViewAdapter extends BaseAdapter{
         View v = inflater.inflate(R.layout.users_list_view_item, parent, false);
 
         User user = (User) getItem(position);
-
-        StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("files/").child("images/").child(user.getUserName() + "/").child("IMG_0525.jpg");
-        String internetUrl = "https://firebasestorage.googleapis.com/v0/b/carpoolapp-48ea9.appspot.com/o/images%2Fjcan1995%2FIMG_0525.jpg?alt=media&token=d350e264-66f6-4126-b336-37721c109cbf";
-        Log.d("storageRef: ",storageReference.toString());
-        TextView tvUserName = (TextView) v.findViewById(R.id.tvUserName);
-        tvUserName.setText(user.getUserName());
-
         ImageView ivPicture = (ImageView) v.findViewById(R.id.ivUserImage);
 
         Glide.with(this.context)
-                .load(internetUrl)
+                .load(user.getDownloadUrl())
                 .into(ivPicture);
 
         return v;
