@@ -311,6 +311,7 @@ import java.util.List;
         }
         mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
+        //mCurrentLocation.get
         if (mCurrentLocation != null) {
 
             Log.d("current","lat:" + mCurrentLocation.getLatitude());
@@ -480,7 +481,7 @@ import java.util.List;
 
                 //Todo: Get Distance////////////////
 
-             //   longInfo(result.toString());
+                longInfo(result.toString());
                 JSONObject jsonObj = new JSONObject(result.toString());
                 JSONArray routesJSONArray = jsonObj.getJSONArray("routes");
                 JSONObject beforeLegsJSONObject = routesJSONArray.getJSONObject(0);
@@ -516,6 +517,7 @@ import java.util.List;
                     }
                 }
 
+                printPolyOptions();
                 addNewTrip(miles,currentAddress);
                 updateUI();
                 //Todo: get distance data from JSON, pass into addNewTrip function.
@@ -568,6 +570,12 @@ import java.util.List;
 
 
 
+    }
+
+    private void printPolyOptions() {
+        for(int i = 0; i < mPolyOptions.size();i++){
+            Log.d("Poly: " + i,mPolyOptions.get(i).toString());
+        }
     }
 
     private void addNewTrip(float miles, String currentAddress) {
