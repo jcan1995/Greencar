@@ -14,23 +14,13 @@ public class User implements Serializable{
     private String password;
     private String userName;
     private String profilePictureUrl;
+    private double points;
     private String localProfilePictureUrl;
     private HashMap<String,TripDetails> trips;
     private String downloadUrl;
     private String key;
 
-
     public User(){}
-
-//    public User(String number, String email, String userName, String profilePictureUrl, String localProfilePictureUrl) {
-//
-//        this.number = number;
-//        this.email = email;
-//        this.profilePictureUrl = profilePictureUrl;
-//        this.userName = userName;
-//        this.localProfilePictureUrl = localProfilePictureUrl;
-//        this.trips = new HashMap<>();
-//    }
 
     public User(String number, String email, String userName, String profilePictureUrl, String localProfilePictureUrl, HashMap<String,TripDetails> tripDetails) {
 
@@ -61,6 +51,14 @@ public class User implements Serializable{
         this.userName = displayName;
     }
 
+
+    public double getPoints() {
+        return points;
+    }
+
+    public void setPoints(double points) {
+        this.points = points;
+    }
 
     public String getDownloadUrl() {
         return downloadUrl;

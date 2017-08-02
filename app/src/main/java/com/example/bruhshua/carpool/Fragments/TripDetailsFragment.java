@@ -1,7 +1,11 @@
 package com.example.bruhshua.carpool.Fragments;
 
 import android.Manifest;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -50,6 +54,7 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
     private GoogleApiClient mGoogleApiClient;
 
     private boolean isConnected;
+    private final static String PROX_ALERT_INTENT = "com.action.proxalert";
     public static TripDetailsFragment newInstance(TripDetails tripDetails) {
 
         TripDetailsFragment tripDetailsFragment = new TripDetailsFragment();
@@ -83,6 +88,7 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
         View v = inflater.inflate(R.layout.confirm_trip_fragment, container, false);
         tripDetails = (TripDetails) getArguments().getSerializable("TRIPDETAILS");
+        Log.d("Coordinates: ", String.valueOf(tripDetails.getmDestinationLat()) + ", " + tripDetails.getmDestinationLng());
 
         tvSourceAddress = (TextView) v.findViewById(R.id.tvSourceDestination);
         tvDestinationAddress = (TextView) v.findViewById(R.id.tvDestinationAddress);
@@ -115,6 +121,7 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
         return v;
     }
 
+
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.d("Updates","onConnected");
@@ -123,10 +130,11 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
     private void requestLocationUpdate() {
 
+
+
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(5000);
-
 
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -139,6 +147,16 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
             return;
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+
+        Intent intent = new Intent(PROX_ALERT_INTENT);
+        PendingIntent proximityIntent = PendingIntent.getBroadcast(getActivity(), 0, intent, 0);
+
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        locationManager.addProximityAlert(tripDetails.getmDestinationLat(),tripDetails.getmDestinationLng(),10,-1,proximityIntent);
+
+        IntentFilter filter = new IntentFilter(PROX_ALERT_INTENT);
+        getActivity().registerReceiver(new ProximityIntentReceiver(),filter);
+        Toast.makeText(getActivity(),"Proximity Alert Set",Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -155,5 +173,21 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
     public void onLocationChanged(Location location) {
 
         Log.d("Updates","Location: " + location.toString());
+    }
+
+    class ProximityIntentReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String key = LocationManager.KEY_PROXIMITY_ENTERING;
+            Boolean entering = intent.getBooleanExtra(key, false);
+            if(entering){
+                Toast.makeText(context,"Entering",Toast.LENGTH_LONG).show();
+            }else{
+                Toast.makeText(context,"Exiting",Toast.LENGTH_LONG).show();
+
+            }
+
+        }
     }
 }

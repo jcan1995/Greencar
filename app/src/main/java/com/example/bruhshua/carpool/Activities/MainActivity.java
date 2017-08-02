@@ -76,8 +76,8 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        toolBar = (Toolbar) findViewById(R.id.toolBar); //initialize toolbar
-        setSupportActionBar(toolBar); //add toolbar to application
+        toolBar = (Toolbar) findViewById(R.id.toolBar);
+        setSupportActionBar(toolBar);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         firebaseAuth = FirebaseAuth.getInstance();
@@ -89,11 +89,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                 .beginTransaction()
                 .replace(R.id.fragment_container,tripMapFragment)
                 .commit();
-
-
-//        Log.d("Inside","username: " + user.getUserName());
-//        Log.d("PhotoUrl: ",user.getDownloadUrl());
-//        Log.d("FirebaseUser: ",firebaseUser.getPhotoUrl().toString());
 
         nvDrawer = (NavigationView) findViewById(R.id.navigationView);
         nvDrawer.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {

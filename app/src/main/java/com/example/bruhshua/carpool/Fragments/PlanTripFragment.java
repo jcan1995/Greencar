@@ -177,15 +177,11 @@ import java.util.List;
     public void updateUI(){
 
         //Todo: Construct MapUIUpdate POJO send through callback to TripMapFragment.
-        //POJO needs, "mPolyOptions, mDestinationLatLng, mCurrentLatLng"
        if(mCurrentLatLng != null && mDestinationLatLng != null) {
-       // if(mPolyOptions != null) {
-            Log.d("PlanTrip","Inside update uI");
-           Log.d("PlanTrip","PolyOptions size: " + mPolyOptions.size());
 
            MapUpdatePOJO mapUpdatePOJO = new MapUpdatePOJO(mPolyOptions,mCurrentLatLng,mDestinationLatLng);
+
            if(callback != null){
-               Log.d("PlanTrip","calling updateMap");
                callback.updateMap(mapUpdatePOJO,tripDetail);
            }else{
                Log.d("updateMap","callback is null.");
@@ -202,12 +198,6 @@ import java.util.List;
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.set_destination_add_passengers_layout, container, false);
-
-//        InputMethodManager inputMethodManager =
-//                (InputMethodManager) getActivity().getSystemService(
-//                        Activity.INPUT_METHOD_SERVICE);
-//        inputMethodManager.hideSoftInputFromWindow(
-//                getActivity().getCurrentFocus().getWindowToken(), 0);
 
         passengers = new ArrayList<>();
         passengers.add(authUser);
@@ -247,7 +237,6 @@ import java.util.List;
                     destinationAddress = etDesinationLocation.getText().toString();
                     getDestinationAddress(etDesinationLocation.getText().toString());
                     getDirections(etDesinationLocation.getText().toString());// Just pass in the destination string since current address is initialized in onConnect interface method.
-                    Log.d("PlanTrip","After getDirections");
 
                 }else{
                     Toast.makeText(getActivity(), "Please Enter an Address.", Toast.LENGTH_SHORT).show();
@@ -273,8 +262,8 @@ import java.util.List;
 
         try{
 
-            FetchAddressFromService fectchLocationFromService = new FetchAddressFromService(getContext(),mCurrentLocation);
-            fectchLocationFromService.execute();
+            FetchAddressFromService fetchLocationFromService = new FetchAddressFromService(getContext(),mCurrentLocation);
+            fetchLocationFromService.execute();
 
         }catch (Exception e){
             e.printStackTrace();
@@ -298,11 +287,7 @@ import java.util.List;
 
         if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
-            //This method doesn't provide specific data that we need to use. Such as LatLng
-            //Maybe we can use this method just for its UI.
 
-          //  map.setMyLocationEnabled(true);
-            Log.d("PlanTrip","setMyLocationEnabled");
         } else {
             //Todo: Maybe show dialog that tells users why we need their location.
             ActivityCompat.requestPermissions(getActivity(),
@@ -336,23 +321,6 @@ import java.util.List;
 
     }
 
-//    public void checkPermissions() {
-//        if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
-//                == PackageManager.PERMISSION_GRANTED) {
-//            Log.d("onCreate", "ACCESS_FINE_LOCATION INCLUDED");
-//            //This method doesn't provide specific data that we need to use. Such as LatLng
-//            //Maybe we can use this method just for its UI.
-//            //  map.setMyLocationEnabled(true);
-//        } else {
-//            Log.d("onCreate", "ACCESS_FINE_LOCATION NOT INCLUDED");
-//            //Callback onRequestPermissionsResult is called in hosting activity!
-//            //Todo: Maybe show dialog that tells users why we need their location.
-//            ActivityCompat.requestPermissions(getActivity(),
-//                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-//                    MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-//        }
-//    }
-
     class MyBroadCastReceiver extends BroadcastReceiver {
 
         @Override
@@ -375,9 +343,7 @@ import java.util.List;
                     dialog.dismiss();
                     break;
 
-                //Todo: Make another case where dialogFragment broadcasts a User object.
                 case "com.action.getpool":
-                   // passengers.add((User) bundle.getSerializable("USER"));
 
                     passengers = (ArrayList<User>) bundle.getSerializable("POOL");
                     updatePassengersView();
@@ -475,8 +441,22 @@ import java.util.List;
                 JSONObject distanceObject = legsObject.getJSONObject("distance");
 
                 String milesString = distanceObject.getString("text");
-                String milestrimmed = milesString.replaceAll(" mi","");
-                float miles = Float.parseFloat(milestrimmed);
+                String milestrimmed = null;
+                float miles = 0;
+                if(milesString.contains("mi")){
+
+                    milestrimmed = milesString.replaceAll(" mi","");
+
+                }else if(milesString.contains("ft")){
+                    milestrimmed = milesString.replaceAll(" ft","");
+
+                }
+
+                if(milestrimmed != null) {
+                    miles = Float.parseFloat(milestrimmed);
+
+                }
+
 
 
                 //Todo: Get Distance////////////////
@@ -520,18 +500,8 @@ import java.util.List;
                 printPolyOptions();
                 addNewTrip(miles,currentAddress);
                 updateUI();
-                //Todo: get distance data from JSON, pass into addNewTrip function.
-                //Get data, upload to firebase;
 
                 dialog.dismiss();
-
-                //Todo: Maybe broadcast data in for loop for each iteration. To relieve huge data.
-//                Bundle args = new Bundle();
-//                args.putParcelableArrayList("POLYLINES",options);
-//
-//                Intent intent = new Intent("com.action.getstepslatlng");
-//                intent.putExtra("BUNDLE",args);
-//                manager.sendBroadcast(intent);
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -580,14 +550,10 @@ import java.util.List;
 
     private void addNewTrip(float miles, String currentAddress) {
 
-        //Todo: Add tripdetails into every passengers "My trips tree in firebase"
-        // Iterate through all passengers to get their usernames and add trip into their field
-
         int numPeople = passengers.size(); //Passengers should also include the driver.
         float points = miles;
 
-       tripDetail = new TripDetails(numPeople,miles,points,currentAddress,destinationAddress);
-
+         tripDetail = new TripDetails(numPeople,miles,points,currentAddress, mCurrentLatLng.latitude,mCurrentLatLng.longitude,destinationAddress,mDestinationLatLng.latitude,mDestinationLatLng.longitude);
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference users_ref = database.getReference("users");
@@ -615,14 +581,5 @@ import java.util.List;
 
             }
         });
-
-        //Todo: Populate details fragment and execute fragment transaction to show fragment on the map.
-       // llSetTrip.setVisibility(LinearLayout.GONE);
-//        TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetail);
-//        getActivity().getSupportFragmentManager()
-//                .beginTransaction()
-//                .replace(R.id.plan_trip_fragment_container,tripDetailsFragment)
-//                .commit();
-
     }
 }
