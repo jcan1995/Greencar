@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
 import com.example.bruhshua.carpool.Model.TripDetails;
@@ -69,10 +70,9 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback,Goog
 
             LatLngBounds bounds = builder.build();
             CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 32);//32
-            map.animateCamera(cu);
+            map.moveCamera(cu);
 
-
-            //Todo: Replace PlanTripFragment with details.
+            map.getUiSettings().setScrollGesturesEnabled(false);
 
             TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetails);
              getActivity().getSupportFragmentManager()

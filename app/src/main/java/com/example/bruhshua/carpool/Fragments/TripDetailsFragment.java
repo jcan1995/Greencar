@@ -19,6 +19,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,11 +42,6 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
 
     private TripDetails tripDetails;
-    private TextView tvSourceAddress;
-    private TextView tvDestinationAddress;
-    private TextView tvMiles;
-    private TextView tvPoints;
-    private TextView tvPassengers;
     private Button bStart;
 
     private LocationManager locationManager;
@@ -81,34 +78,32 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
         mGoogleApiClient.connect();
 
     }
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        final InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.confirm_trip_fragment, container, false);
+        final InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+
         tripDetails = (TripDetails) getArguments().getSerializable("TRIPDETAILS");
         Log.d("Coordinates: ", String.valueOf(tripDetails.getmDestinationLat()) + ", " + tripDetails.getmDestinationLng());
 
-        tvSourceAddress = (TextView) v.findViewById(R.id.tvSourceDestination);
-        tvDestinationAddress = (TextView) v.findViewById(R.id.tvDestinationAddress);
-        tvMiles = (TextView) v.findViewById(R.id.tvMiles);
-        tvPoints = (TextView) v.findViewById(R.id.tvPoints);
-        tvPassengers = (TextView) v.findViewById(R.id.tvPassengers);
-
-        if (tripDetails != null) {
-
-            tvSourceAddress.setText(tripDetails.getCurrentAddress());
-            tvDestinationAddress.setText(tripDetails.getDestinationAddress());
-            tvMiles.setText(String.valueOf(tripDetails.getMiles()));
-            tvPoints.setText(String.valueOf(tripDetails.getPoints()));
-            tvPassengers.setText(String.valueOf(tripDetails.getNumOfPeople()));
-        }
         bStart = (Button) v.findViewById(R.id.bStart);
         bStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(isConnected) {
+                    bStart.setAlpha(.5f);
+                    bStart.setEnabled(false);
+                    bStart.setText("In Progress");
                     requestLocationUpdate();
                 }else{
                     Toast.makeText(getActivity(),"Not Connected Yet.",Toast.LENGTH_LONG).show();
@@ -129,8 +124,6 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
     }
 
     private void requestLocationUpdate() {
-
-
 
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);

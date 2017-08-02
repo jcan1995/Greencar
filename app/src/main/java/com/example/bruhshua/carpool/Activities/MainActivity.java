@@ -182,7 +182,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         Log.d("MainActivity","inside updateMap");
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         tripMapFragment.updateMap(mapUpdatePOJO,tripDetails);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
     }
 }
