@@ -26,11 +26,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Model.TripDetails;
+import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.w3c.dom.Text;
 
@@ -40,7 +46,7 @@ import org.w3c.dom.Text;
 
 public class TripDetailsFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
-
+    private User user;
     private TripDetails tripDetails;
     private Button bStart;
 
@@ -52,11 +58,15 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
     private boolean isConnected;
     private final static String PROX_ALERT_INTENT = "com.action.proxalert";
-    public static TripDetailsFragment newInstance(TripDetails tripDetails) {
+
+
+
+    public static TripDetailsFragment newInstance(TripDetails tripDetails, User user) {
 
         TripDetailsFragment tripDetailsFragment = new TripDetailsFragment();
         Bundle args = new Bundle();
         args.putSerializable("TRIPDETAILS", tripDetails);
+        args.putSerializable("USER", user);
         tripDetailsFragment.setArguments(args);
         return tripDetailsFragment;
     }
@@ -93,8 +103,11 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
         final InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
 
+        user = (User) getArguments().getSerializable("USER");
         tripDetails = (TripDetails) getArguments().getSerializable("TRIPDETAILS");
-        Log.d("Coordinates: ", String.valueOf(tripDetails.getmDestinationLat()) + ", " + tripDetails.getmDestinationLng());
+        Log.d("Info", "Coordinates: " + String.valueOf(tripDetails.getmDestinationLat()) + ", " + tripDetails.getmDestinationLng());
+        Log.d("Info","Points: " + tripDetails.getPoints());
+       // updatePoints();
 
         bStart = (Button) v.findViewById(R.id.bStart);
         bStart.setOnClickListener(new View.OnClickListener() {
@@ -175,6 +188,11 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
             String key = LocationManager.KEY_PROXIMITY_ENTERING;
             Boolean entering = intent.getBooleanExtra(key, false);
             if(entering){
+
+                updatePoints();
+                showSummary();
+                refreshPage();
+
                 Toast.makeText(context,"Entering",Toast.LENGTH_LONG).show();
             }else{
                 Toast.makeText(context,"Exiting",Toast.LENGTH_LONG).show();
@@ -182,5 +200,34 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
             }
 
         }
+    }
+
+    private void refreshPage() {
+    }
+
+    private void showSummary() {
+    }
+
+    private void updatePoints() {
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference users_ref = database.getReference("users/" + user.getKey() + "/points");
+        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                double points = dataSnapshot.getValue(double.class);
+                points += tripDetails.getPoints();
+                users_ref.setValue(points);
+                Log.d("Points: ","" + points);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+
     }
 }

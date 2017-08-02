@@ -1,7 +1,5 @@
 package com.example.bruhshua.carpool.Model;
 
-import com.google.android.gms.maps.model.LatLng;
-
 import java.io.Serializable;
 
 /**
@@ -12,7 +10,7 @@ public class TripDetails implements Serializable {
 
     private int numOfPeople;
     private float miles;
-    private float points;
+    private double points;
     private String currentAddress;
     private String destinationAddress;
 
@@ -105,11 +103,11 @@ public class TripDetails implements Serializable {
         this.miles = miles;
     }
 
-    public float getPoints() {
+    public double getPoints() {
         return points;
     }
 
-    public void setPoints(float points) {
+    public void setPoints(double points) {
         this.points = points;
     }
 }

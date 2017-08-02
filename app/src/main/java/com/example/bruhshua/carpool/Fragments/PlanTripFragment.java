@@ -120,7 +120,7 @@ import java.util.List;
     }
 
     public interface Callback {
-        public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails);
+        public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user);
     }
 
     @Override
@@ -183,7 +183,7 @@ import java.util.List;
            MapUpdatePOJO mapUpdatePOJO = new MapUpdatePOJO(mPolyOptions,mCurrentLatLng,mDestinationLatLng);
 
            if(callback != null){
-               callback.updateMap(mapUpdatePOJO,tripDetail);
+               callback.updateMap(mapUpdatePOJO,tripDetail, authUser);
            }else{
                Log.d("updateMap","callback is null.");
            }
@@ -449,6 +449,7 @@ import java.util.List;
                     milestrimmed = milesString.replaceAll(" mi","");
 
                 }else if(milesString.contains("ft")){
+                    //todo: convert from ft to miles
                     milestrimmed = milesString.replaceAll(" ft","");
 
                 }

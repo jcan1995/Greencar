@@ -177,11 +177,11 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     }
 
     @Override
-    public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails) {
+    public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user) {
 
         Log.d("MainActivity","inside updateMap");
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        tripMapFragment.updateMap(mapUpdatePOJO,tripDetails);
+        tripMapFragment.updateMap(mapUpdatePOJO,tripDetails, user);
 
     }
 }

@@ -50,7 +50,7 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback,Goog
         return tripMapFragment;
     }
 
-    public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails){
+    public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user){
         Log.d("TripMapFragment","inside updateMap");
 
         if(mapUpdatePOJO.getmCurrentLatLng() != null && mapUpdatePOJO.getmDestinationLatLng() != null) {
@@ -74,7 +74,7 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback,Goog
 
             map.getUiSettings().setScrollGesturesEnabled(false);
 
-            TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetails);
+            TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetails, user);
              getActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.plan_trip_fragment_container,tripDetailsFragment)

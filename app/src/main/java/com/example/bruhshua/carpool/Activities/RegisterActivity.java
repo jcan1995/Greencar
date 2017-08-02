@@ -194,7 +194,7 @@ public class RegisterActivity extends Activity{
                                         @SuppressWarnings("VisibleForTests")
                                         Uri downloadUrl = taskSnapshot.getDownloadUrl();
 
-                                        final User user = new User(email,userName,downloadUrl.toString(),phoneNumber,key);
+                                        final User user = new User(email,userName,downloadUrl.toString(),phoneNumber,key, 0.0);
                                         users_ref.child(key).setValue(user);
 
                                         UserProfileChangeRequest profileChangeRequest = new UserProfileChangeRequest.Builder()

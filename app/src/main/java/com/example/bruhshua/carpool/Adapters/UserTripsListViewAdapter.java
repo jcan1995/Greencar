@@ -5,14 +5,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.bruhshua.carpool.Model.TripDetails;
-import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 

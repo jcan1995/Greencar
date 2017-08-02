@@ -38,12 +38,13 @@ public class User implements Serializable{
         this.downloadUrl = downloadUrl;
     }
 
-    public User(String email, String displayName, String downloadUrl, String phoneNumber, String key) {
+    public User(String email, String displayName, String downloadUrl, String phoneNumber, String key, double points) {
         this.email = email;
         this.userName = displayName;
         this.downloadUrl = downloadUrl;
         this.number = phoneNumber;
         this.key = key;
+        this.points = points;
 
     }
     public User(String email, String displayName) {
