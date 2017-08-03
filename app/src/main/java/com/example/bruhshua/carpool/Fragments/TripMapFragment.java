@@ -87,6 +87,27 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback,Goog
 
     }
 
+    public void showSummary(TripDetails tripDetails, User user){
+
+        TripSummaryFragment tripSummaryFragment = TripSummaryFragment.newInstance(tripDetails, user);
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.plan_trip_fragment_container,tripSummaryFragment)
+                .commit();
+
+
+    }
+
+    public void Reset(User user){
+        map.clear();
+        PlanTripFragment planTripFragment = PlanTripFragment.newInstance(user);
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.plan_trip_fragment_container,planTripFragment)
+                .commit();
+
+
+    }
     @Override
     public void onStart() {
         super.onStart();

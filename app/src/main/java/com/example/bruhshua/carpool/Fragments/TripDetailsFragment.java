@@ -25,6 +25,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
 import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
@@ -55,12 +56,24 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
     private Location previousLocation;
 
     private GoogleApiClient mGoogleApiClient;
-
+    private Callback callback;
+    private PendingIntent proximityIntent;
     private boolean isConnected;
+    private ProximityIntentReceiver proximityIntentReceiver;
     private final static String PROX_ALERT_INTENT = "com.action.proxalert";
 
+    public interface Callback {
+        public void showSummary(TripDetails tripDetails, User user);
+    }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if(context instanceof PlanTripFragment.Callback){
+            callback = (TripDetailsFragment.Callback) context;
+        }
 
+    }
     public static TripDetailsFragment newInstance(TripDetails tripDetails, User user) {
 
         TripDetailsFragment tripDetailsFragment = new TripDetailsFragment();
@@ -155,14 +168,17 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 
         Intent intent = new Intent(PROX_ALERT_INTENT);
-        PendingIntent proximityIntent = PendingIntent.getBroadcast(getActivity(), 0, intent, 0);
+        proximityIntent = PendingIntent.getBroadcast(getActivity(), 0, intent, 0);
 
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        locationManager.addProximityAlert(tripDetails.getmDestinationLat(),tripDetails.getmDestinationLng(),10,-1,proximityIntent);
+        locationManager.addProximityAlert(tripDetails.getmDestinationLat(),tripDetails.getmDestinationLng(),20,-1,proximityIntent);
 
         IntentFilter filter = new IntentFilter(PROX_ALERT_INTENT);
-        getActivity().registerReceiver(new ProximityIntentReceiver(),filter);
-        Toast.makeText(getActivity(),"Proximity Alert Set",Toast.LENGTH_LONG).show();
+
+        proximityIntentReceiver = new ProximityIntentReceiver();
+
+        getActivity().registerReceiver(proximityIntentReceiver,filter);
+        //Toast.makeText(getActivity(),"Proximity Alert Set",Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -178,7 +194,7 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
     @Override
     public void onLocationChanged(Location location) {
 
-        Log.d("Updates","Location: " + location.toString());
+        //Log.d("Updates","Location: " + location.toString());
     }
 
     class ProximityIntentReceiver extends BroadcastReceiver {
@@ -188,24 +204,25 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
             String key = LocationManager.KEY_PROXIMITY_ENTERING;
             Boolean entering = intent.getBooleanExtra(key, false);
             if(entering){
-
+                Log.d("TripDetails","onReceive called");
+                Log.d("TripDetails","Entering Proximity");
+                locationManager.removeProximityAlert(proximityIntent);
+                getActivity().unregisterReceiver(proximityIntentReceiver);
                 updatePoints();
                 showSummary();
-                refreshPage();
 
-                Toast.makeText(context,"Entering",Toast.LENGTH_LONG).show();
             }else{
-                Toast.makeText(context,"Exiting",Toast.LENGTH_LONG).show();
+                Log.d("TripDetails","Exiting Proximity");
 
             }
 
         }
     }
 
-    private void refreshPage() {
-    }
-
     private void showSummary() {
+
+        callback.showSummary(tripDetails,user);
+
     }
 
     private void updatePoints() {

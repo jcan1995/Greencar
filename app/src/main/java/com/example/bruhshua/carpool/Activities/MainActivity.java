@@ -18,7 +18,9 @@ import android.widget.Toast;
 import com.example.bruhshua.carpool.Fragments.MyAccountFragment;
 import com.example.bruhshua.carpool.Fragments.MyTripsFragment;
 import com.example.bruhshua.carpool.Fragments.PlanTripFragment;
+import com.example.bruhshua.carpool.Fragments.TripDetailsFragment;
 import com.example.bruhshua.carpool.Fragments.TripMapFragment;
+import com.example.bruhshua.carpool.Fragments.TripSummaryFragment;
 import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
 import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.Model.User;
@@ -30,7 +32,7 @@ import com.google.firebase.auth.FirebaseUser;
  * Created by bruhshua on 5/21/17.
  */
 
-public class MainActivity extends AppCompatActivity implements PlanTripFragment.Callback {
+public class MainActivity extends AppCompatActivity implements PlanTripFragment.Callback, TripDetailsFragment.Callback, TripSummaryFragment.Callback {
 
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
@@ -183,5 +185,17 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         tripMapFragment.updateMap(mapUpdatePOJO,tripDetails, user);
 
+    }
+
+    @Override
+    public void showSummary(TripDetails tripDetails, User user) {
+        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        tripMapFragment.showSummary(tripDetails,user);
+    }
+
+    @Override
+    public void Reset(User user) {
+        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        tripMapFragment.Reset(user);
     }
 }
