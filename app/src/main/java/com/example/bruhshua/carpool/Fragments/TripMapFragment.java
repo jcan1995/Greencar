@@ -82,7 +82,7 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
             CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 32);//32
             map.moveCamera(cu);
 
-            map.getUiSettings().setScrollGesturesEnabled(false);
+//            map.getUiSettings().setScrollGesturesEnabled(false);
 
             TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetails, user);
             getActivity().getSupportFragmentManager()
@@ -192,6 +192,7 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
 
         Log.d("TripMapFragment","onMapReady called");
         map = googleMap;
+        map.getUiSettings().setScrollGesturesEnabled(false);
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
 
        // map.moveCamera();

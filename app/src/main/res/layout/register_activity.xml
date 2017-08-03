@@ -2,16 +2,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
-    android:layout_marginTop="16dp"
-    android:layout_marginBottom="16dp">
+    android:padding="16dp"
+    android:background="@color/colorAccent"
+ >
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/action_register"
         android:textSize="24dp"
+        android:textColor="@color/white"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
     <LinearLayout
@@ -40,6 +40,8 @@
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:id="@+id/tvAddPicture"
+            android:textColor="@color/white"
+            android:paddingBottom="16dp"
             android:gravity="center"
             android:text="Add a Picture"/>
 
@@ -48,55 +50,85 @@
             android:id="@+id/tvRegEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/input_outline"
+            android:textColorHint="@color/white"
+            android:textColor="@color/white"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="16dp"
+            android:padding="10dp"
             android:hint="@string/prompt_email"
             android:inputType="textEmailAddress"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp" />
+         />
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColorHint="@color/white"
+            android:textColor="@color/white"
+            android:background="@drawable/input_outline"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="16dp"
             android:hint="@string/prompt_password"
+            android:padding="10dp"
             android:id="@+id/tvRegPassword"
             android:inputType="textPassword"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"/>
+         />
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="16dp"
+            android:textColorHint="@color/white"
+            android:textColor="@color/white"
+            android:padding="10dp"
+            android:background="@drawable/input_outline"
             android:hint="@string/user_name"
             android:id="@+id/etUserName"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"/>
+          />
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColorHint="@color/white"
+            android:textColor="@color/white"
+            android:background="@drawable/input_outline"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="16dp"
+            android:padding="10dp"
             android:hint="@string/phone_number"
             android:id="@+id/etPhoneNumber"
             android:inputType="phone"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"/>
+
+           />
 
     </LinearLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/bRegister"
+        android:background="@color/white"
+        android:text="@string/action_register"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_below="@+id/linearLayout"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+         />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/etBack"
         android:clickable="true"
+        android:textColor="@color/white"
         android:onClick="backToLogIn"
-        android:layout_marginTop="129dp"
+        android:layout_marginTop="16dp"
         android:id="@+id/etBack"
-        android:layout_below="@+id/linearLayout"
+        android:layout_below="@id/bRegister"
         android:layout_centerHorizontal="true" />
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/bRegister"
-        android:text="@string/action_register"
-        android:layout_below="@+id/linearLayout"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="44dp" />
         <!--android:clickable="true"-->
         <!--android:onClick="registerUser"-->
 
