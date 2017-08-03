@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -207,11 +208,17 @@ import java.util.List;
         updatePassengersView();
         etDesinationLocation = (EditText) v.findViewById(R.id.etDestinationLocation);
         ivInvitePassenger = (ImageView) v.findViewById(R.id.ivAddPassenger);
+
         ivInvitePassenger.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 if(passengers != null) {
+//
+//                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("sms:" + "6199426705"));
+//                    intent.putExtra("sms_body", "Hi");
+//                    startActivity(intent);
+
                     Bundle args = new Bundle();
                     args.putSerializable("POOL", passengers);
 
@@ -235,6 +242,7 @@ import java.util.List;
                     dialog.setMessage("Please wait...");
                     dialog.show();
 
+                    validatePassengers();
                     destinationAddress = etDesinationLocation.getText().toString();
                     getDestinationAddress(etDesinationLocation.getText().toString());
                     getDirections(etDesinationLocation.getText().toString());// Just pass in the destination string since current address is initialized in onConnect interface method.
@@ -246,6 +254,17 @@ import java.util.List;
         });
 
         return v;
+    }
+
+    //Send texts to confirm they are in the car
+    //Check passengers locations to ensure they're relatively close together.
+
+    private void validatePassengers() {
+
+
+
+
+
     }
 
     private void getDestinationAddress(String destinationAddress){

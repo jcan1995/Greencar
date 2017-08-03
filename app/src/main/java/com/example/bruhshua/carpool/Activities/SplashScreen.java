@@ -33,7 +33,9 @@ public class SplashScreen extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash_screen);
-
+//        finish();
+//        Intent i = new Intent(getApplicationContext(), LoginActivity.class);
+//        startActivity(i);
         firebaseAuth = FirebaseAuth.getInstance();
 
         new Handler().postDelayed(new Runnable() {
@@ -61,6 +63,7 @@ public class SplashScreen extends Activity {
 
                                 }
                             }
+
 
                         }
 

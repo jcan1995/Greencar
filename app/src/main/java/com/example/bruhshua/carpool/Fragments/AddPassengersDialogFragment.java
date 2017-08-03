@@ -115,7 +115,6 @@ public class AddPassengersDialogFragment extends DialogFragment {
         database = FirebaseDatabase.getInstance();
         users_ref = database.getReference("users");
 
-
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Invite Passengers");
         builder.setView(view);

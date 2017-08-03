@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <group>
     <item android:id="@+id/plan_trip"
         android:title="Plan Trip"
         android:icon="@mipmap/ic_home_black_24dp"/>
@@ -17,4 +18,28 @@
         android:title="Log Out"
         android:icon="@mipmap/ic_exit_to_app_black_24dp"/>
 
+    <item android:title="Social"/>
+
+    </group>
+    <item android:title="Other">
+
+        <menu>
+            <item
+                android:id="@+id/merch"
+                android:title="Merchandise"
+                android:icon="@mipmap/ic_credit_card_black_24dp"
+                ></item>
+            <item
+                android:id="@+id/contact"
+                android:title="Contact"
+                android:icon="@mipmap/ic_email_black_24dp"
+                ></item>
+            <item
+                android:id="@+id/about"
+                android:title="About"
+                android:icon="@mipmap/ic_help_black_24dp"
+                ></item>
+
+        </menu>
+    </item>
 </menu>
