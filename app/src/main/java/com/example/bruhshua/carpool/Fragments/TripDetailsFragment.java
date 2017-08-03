@@ -242,22 +242,26 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
     private void updatePoints() {
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference users_ref = database.getReference("users/" + user.getKey() + "/points");
-        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                double points = dataSnapshot.getValue(double.class);
-                points += tripDetails.getPoints();
-                users_ref.setValue(points);
-                Log.d("Points: ","" + points);
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+        for(int i = 0; i < tripDetails.getPassengers().size();i++){
 
-            }
-        });
+            final DatabaseReference users_ref = database.getReference("users/" + tripDetails.getPassengers().get(i).getKey() + "/points");
+            users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    double points = dataSnapshot.getValue(double.class);
+                    points += tripDetails.getPoints();
+                    users_ref.setValue(points);
+                    Log.d("Points: ","" + points);
+                }
 
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+        }
 
 
     }

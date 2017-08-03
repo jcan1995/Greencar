@@ -7,24 +7,28 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_height="70dp"
+        android:layout_gravity="center|bottom"
+        android:fitsSystemWindows="true"
+        android:gravity="center|bottom"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:visibility="visible"
         >
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@mipmap/ic_add_passenger"
+            android:src="@mipmap/ic_search"
             android:id="@+id/ivFindPassenger"
             />
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Find Passenger"
-            android:layout_marginLeft="16dp"
             android:id="@+id/etPassenger"
+            android:padding="10dp"
             android:textStyle="bold"
-            android:paddingLeft="16dp"
             android:gravity="left"
             />
 
@@ -49,6 +53,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/lvBufferedPool"
+        android:divider="@null"
+        android:dividerHeight="0dp"
         >
 
     </ListView>

@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.bruhshua.carpool.Adapters.AddPassengersListViewAdapter;
 import com.example.bruhshua.carpool.Adapters.UsersListViewAdapter;
 import com.example.bruhshua.carpool.R;
 import com.example.bruhshua.carpool.Model.User;
@@ -40,7 +41,8 @@ public class AddPassengersDialogFragment extends DialogFragment {
     private ArrayList<User> users = new ArrayList<>();
     private ArrayList<User> bufferedPassengers = new ArrayList<>();
 
-    private UsersListViewAdapter mAdapter;
+    private AddPassengersListViewAdapter mAdapter;
+
     private ListView passengersListView;
     private ListView bufferedListView;
 
@@ -71,19 +73,29 @@ public class AddPassengersDialogFragment extends DialogFragment {
         Bundle bundle = i.getParcelableExtra("BUNDLE");
 
         bufferedPassengers = (ArrayList<User>) bundle.getSerializable("POOL");
-
+        Log.d("SizeTest","bufferedPassengers: " + bufferedPassengers.size());
         updatePool();
 
         passengersListView = (ListView) view.findViewById(R.id.listView);
         passengersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //Todo: Grab User, place into "pool"
-                bufferedPassengers.add(users.get(position));
-                updatePool();
+
+                if(!isInPool(users.get(position))) {
+                    bufferedPassengers.add(users.get(position));
+                    updatePool();
+                    users.clear();
+                    mAdapter = new AddPassengersListViewAdapter(users, getActivity().getApplicationContext());
+                    passengersListView.setAdapter(mAdapter);
+                }else{
+                    Toast.makeText(getActivity(),"Person is already in the pool.",Toast.LENGTH_SHORT).show();
+
+                }
 
             }
         });
+
+
 
         etPassenger = (EditText) view.findViewById(R.id.etPassenger);
 
@@ -112,7 +124,6 @@ public class AddPassengersDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
-                //Todo: Send Array list of users to fragment
                 Bundle args = new Bundle();
                 args.putSerializable("POOL",bufferedPassengers);
 
@@ -124,6 +135,23 @@ public class AddPassengersDialogFragment extends DialogFragment {
         });
 
         return builder.create();
+    }
+
+
+    //Checks if user is already in the pool
+    private boolean isInPool(User user) {
+
+        for(int i = 0; i < bufferedPassengers.size();i++){
+            if(bufferedPassengers.get(i).getUserName() == user.getUserName()){
+
+                Log.d("SizeTest","true");
+                return true;
+            }
+        }
+        Log.d("SizeTest","false");
+
+        return false;
+
     }
 
     private void queryFirebase(final String userName) {
@@ -150,7 +178,6 @@ public class AddPassengersDialogFragment extends DialogFragment {
                             updateUI();
                         }
                     }
-                    // updateUI();
 
                 }
 
@@ -168,7 +195,7 @@ public class AddPassengersDialogFragment extends DialogFragment {
 
         //Meaning if the dialog is actually showing. This coincidentally gets fired off from the onDataChanged due to the new trip added.
         if(getActivity() != null) {
-            mAdapter = new UsersListViewAdapter(users, getActivity().getApplicationContext());
+            mAdapter = new AddPassengersListViewAdapter(users, getActivity().getApplicationContext());
             passengersListView.setAdapter(mAdapter);
         }
 
@@ -176,7 +203,7 @@ public class AddPassengersDialogFragment extends DialogFragment {
 
     private void updatePool() {
         if(bufferedPassengers != null) {
-            mAdapter = new UsersListViewAdapter(bufferedPassengers, getActivity().getApplicationContext());
+            mAdapter = new AddPassengersListViewAdapter(bufferedPassengers, getActivity().getApplicationContext());
             bufferedListView.setAdapter(mAdapter);
         }
     }
