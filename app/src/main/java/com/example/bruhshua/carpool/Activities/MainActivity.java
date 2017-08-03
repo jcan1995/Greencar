@@ -16,8 +16,11 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.example.bruhshua.carpool.Fragments.AboutFragment;
 import com.example.bruhshua.carpool.Fragments.AddPassengersDialogFragment;
 import com.example.bruhshua.carpool.Fragments.CancelTripDialogFragment;
+import com.example.bruhshua.carpool.Fragments.ContactFragment;
+import com.example.bruhshua.carpool.Fragments.MerchandiseFragment;
 import com.example.bruhshua.carpool.Fragments.MyAccountFragment;
 import com.example.bruhshua.carpool.Fragments.MyTripsFragment;
 import com.example.bruhshua.carpool.Fragments.PlanTripFragment;
@@ -133,6 +136,33 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                     case R.id.log_out:
                         logout();
                         break;
+
+                    case R.id.merch:
+
+                        MerchandiseFragment merchandiseFragment = MerchandiseFragment.newInstance(user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container,merchandiseFragment)
+                                .commit();
+
+                        break;
+
+                    case R.id.contact:
+                        ContactFragment contactFragment = ContactFragment.newInstance(user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container,contactFragment)
+                                .commit();
+                        break;
+
+                    case R.id.about:
+                        AboutFragment aboutFragment = AboutFragment.newInstance(user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container,aboutFragment)
+                                .commit();
+                        break;
+
                     default:
 
                         MyAccountFragment fragment1 = MyAccountFragment.newInstance(user);

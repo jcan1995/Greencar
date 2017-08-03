@@ -17,9 +17,7 @@
     <item android:id="@+id/log_out"
         android:title="Log Out"
         android:icon="@mipmap/ic_exit_to_app_black_24dp"/>
-
-    <item android:title="Social"/>
-
+        
     </group>
     <item android:title="Other">
 
