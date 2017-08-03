@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,8 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.example.bruhshua.carpool.Fragments.AddPassengersDialogFragment;
+import com.example.bruhshua.carpool.Fragments.CancelTripDialogFragment;
 import com.example.bruhshua.carpool.Fragments.MyAccountFragment;
 import com.example.bruhshua.carpool.Fragments.MyTripsFragment;
 import com.example.bruhshua.carpool.Fragments.PlanTripFragment;
@@ -32,7 +35,7 @@ import com.google.firebase.auth.FirebaseUser;
  * Created by bruhshua on 5/21/17.
  */
 
-public class MainActivity extends AppCompatActivity implements PlanTripFragment.Callback, TripDetailsFragment.Callback, TripSummaryFragment.Callback {
+public class MainActivity extends AppCompatActivity implements PlanTripFragment.Callback, TripDetailsFragment.Callback, TripSummaryFragment.Callback, CancelTripDialogFragment.Callback {
 
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
@@ -46,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
     private ProgressDialog dialog;
 
+    private boolean isOnConfirmationFragment = false;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -182,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user) {
 
         Log.d("MainActivity","inside updateMap");
+        isOnConfirmationFragment = true;
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         tripMapFragment.updateMap(mapUpdatePOJO,tripDetails, user);
 
@@ -197,5 +202,25 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     public void Reset(User user) {
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         tripMapFragment.Reset(user);
+    }
+
+    @Override
+    public void onBackPressed() {
+//        super.onBackPressed(); <--- is what closes the app
+
+        if(isOnConfirmationFragment){
+            CancelTripDialogFragment cancelTripDialogFragment = CancelTripDialogFragment.newInstance();
+            cancelTripDialogFragment.show(this.getFragmentManager(),"CANCELTRIP");
+
+        }
+
+
+    }
+
+    @Override
+    public void cancelTrip() {
+        isOnConfirmationFragment = false;
+        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        tripMapFragment.cancelTrip(user);
     }
 }

@@ -1,6 +1,7 @@
 package com.example.bruhshua.carpool.Activities;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -44,6 +45,13 @@ public class ResetPasswordActivity extends Activity {
             }
         });
 
+
+    }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+        startActivity(new Intent(this,LoginActivity.class));
 
     }
 }

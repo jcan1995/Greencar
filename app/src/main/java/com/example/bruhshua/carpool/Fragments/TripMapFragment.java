@@ -14,10 +14,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
 import com.example.bruhshua.carpool.Model.TripDetails;
@@ -119,6 +121,16 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
 
     }
 
+    public void cancelTrip(User user){
+        map.clear();
+        PlanTripFragment planTripFragment = PlanTripFragment.newInstance(user);
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.plan_trip_fragment_container, planTripFragment)
+                .commit();
+
+    }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -153,6 +165,16 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.trip_map_fragment,container,false);
+        v.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    Toast.makeText(getActivity(),"Back pressed",Toast.LENGTH_SHORT).show();
+//                    return true;
+                }
+                return true;
+            }
+        });
         manager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -194,8 +216,6 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
         map = googleMap;
         map.getUiSettings().setScrollGesturesEnabled(false);
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
-
-       // map.moveCamera();
 
     }
 

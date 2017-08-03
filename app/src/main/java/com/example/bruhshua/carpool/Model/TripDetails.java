@@ -1,6 +1,7 @@
 package com.example.bruhshua.carpool.Model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * Created by bruhshua on 6/12/17.
@@ -13,30 +14,35 @@ public class TripDetails implements Serializable {
     private double points;
     private String currentAddress;
     private String destinationAddress;
-
-
     private double mCurrentLat;
     private double mCurrentLng;
 
     private double mDestinationLat;
     private double mDestinationLng;
 
+    private ArrayList<User> passengers;
     public TripDetails(){}
 
-    public TripDetails(int numOfPeople, float miles, float points, String currentAddress, double currentLat, double currentLng, String destinationAddress, double destinationLat, double destinationLng) {
+    public TripDetails(ArrayList<User> passengers,int numOfPeople, float miles, float points, String currentAddress, double currentLat, double currentLng, String destinationAddress, double destinationLat, double destinationLng) {
+        this.passengers = passengers;
         this.numOfPeople = numOfPeople;
         this.miles = miles;
         this.points = points;
         this.currentAddress = currentAddress;
         this.destinationAddress = destinationAddress;
-
         this.mCurrentLat = currentLat;
         this.mCurrentLng = currentLng;
         this.mDestinationLat = destinationLat;
         this.mDestinationLng = destinationLng;
 
     }
+    public ArrayList<User> getPassengers() {
+        return passengers;
+    }
 
+    public void setPassengers(ArrayList<User> passengers) {
+        this.passengers = passengers;
+    }
     public double getmCurrentLat() {
         return mCurrentLat;
     }

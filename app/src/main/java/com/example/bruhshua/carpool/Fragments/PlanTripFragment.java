@@ -461,8 +461,6 @@ import java.util.List;
 
 
 
-                //Todo: Get Distance////////////////
-
                 longInfo(result.toString());
                 JSONObject jsonObj = new JSONObject(result.toString());
                 JSONArray routesJSONArray = jsonObj.getJSONArray("routes");
@@ -475,7 +473,6 @@ import java.util.List;
                 //longInfo(stepsJSONArray.toString());
 
                 List<LatLng> test = new ArrayList<>();
-               // map.clear();
 
                 for(int i = 0; i < stepsJSONArray.length(); i++){
 
@@ -499,8 +496,9 @@ import java.util.List;
                     }
                 }
 
-                printPolyOptions();
-                addNewTrip(miles,currentAddress);
+                int numPeople = passengers.size(); //Passengers should also include the driver.
+                float points = miles;
+                tripDetail = new TripDetails(passengers,numPeople,miles,points,currentAddress, mCurrentLatLng.latitude,mCurrentLatLng.longitude,destinationAddress,mDestinationLatLng.latitude,mDestinationLatLng.longitude);
                 updateUI();
 
                 dialog.dismiss();
@@ -542,46 +540,5 @@ import java.util.List;
 
 
 
-    }
-
-    private void printPolyOptions() {
-        for(int i = 0; i < mPolyOptions.size();i++){
-            Log.d("Poly: " + i,mPolyOptions.get(i).toString());
-        }
-    }
-
-    private void addNewTrip(float miles, String currentAddress) {
-
-        int numPeople = passengers.size(); //Passengers should also include the driver.
-        float points = miles;
-
-         tripDetail = new TripDetails(numPeople,miles,points,currentAddress, mCurrentLatLng.latitude,mCurrentLatLng.longitude,destinationAddress,mDestinationLatLng.latitude,mDestinationLatLng.longitude);
-
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference users_ref = database.getReference("users");
-
-        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
-
-                    User user = messageSnapshot.getValue(User.class);
-
-                    for(int i = 0; i < passengers.size();i++){
-
-                        if(user.getUserName().equals(passengers.get(i).getUserName())){
-                            users_ref.child(messageSnapshot.getKey()).child("trips").push().setValue(tripDetail);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
     }
 }

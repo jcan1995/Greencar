@@ -225,44 +225,6 @@ public class RegisterActivity extends Activity{
 
                                     }
                                 });
-//                        final User user = new User(email,userName,selectedImage.toString(),phoneNumber,key);
-//
-//                        users_ref.child(key).setValue(user);
-//
-//                        UserProfileChangeRequest profileChangeRequest = new UserProfileChangeRequest.Builder()
-//                                .setDisplayName(userName)
-//                                .setPhotoUri(selectedImage)
-//                                .build();
-//
-//                        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-//                        firebaseUser.updateProfile(profileChangeRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
-//                            @Override
-//                            public void onComplete(@NonNull Task<Void> task) {
-//
-//                            }
-//                        });
-
-//                        mStorageRef = mStorageRef.child("images/" +userName+ "/"+"profile_picture");
-//                        mStorageRef.putFile(selectedImage)
-//                                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-//                                    @Override
-//                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-//                                        dialog.dismiss();
-//                                        @SuppressWarnings("VisibleForTests")
-//                                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
-//                                        Log.d("downloadUrl: ", downloadUrl.toString());
-//                                        Toast.makeText(getApplicationContext(), "Registration Successful.", Toast.LENGTH_SHORT).show();
-//                                        Intent i = new Intent(getApplicationContext(),LoginActivity.class);
-//                                        startActivity(i);
-//
-//                                    }
-//                                })
-//                                .addOnFailureListener(new OnFailureListener() {
-//                                    @Override
-//                                    public void onFailure(@NonNull Exception e) {
-//
-//                                    }
-//                                });
 
                     }else{
                         dialog.dismiss();
@@ -275,8 +237,17 @@ public class RegisterActivity extends Activity{
 
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+        startActivity(new Intent(this,LoginActivity.class));
+
+    }
+
     public void backToLogIn(View view){
         //send user back to the log in activity
+        finish();
         startActivity(new Intent(this,LoginActivity.class));
     }
 }

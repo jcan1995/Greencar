@@ -16,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -113,6 +114,18 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.confirm_trip_fragment, container, false);
+        v.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    Toast.makeText(getActivity(),"Back pressed",Toast.LENGTH_SHORT).show();
+//                    return true;
+                }
+                return true;
+               // return false;
+            }
+        });
+
         final InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
 
@@ -210,6 +223,7 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
                 getActivity().unregisterReceiver(proximityIntentReceiver);
                 updatePoints();
                 showSummary();
+                addNewTrip(tripDetails);
 
             }else{
                 Log.d("TripDetails","Exiting Proximity");
@@ -246,5 +260,34 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
 
 
+    }
+    private void addNewTrip(final TripDetails tripDetail) {
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference users_ref = database.getReference("users");
+
+        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
+
+                    User user = messageSnapshot.getValue(User.class);
+
+                    for(int i = 0; i < tripDetail.getPassengers().size();i++){
+
+                        if(user.getUserName().equals(tripDetail.getPassengers().get(i).getUserName())){
+                            users_ref.child(messageSnapshot.getKey()).child("trips").push().setValue(tripDetail);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 }

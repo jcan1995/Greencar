@@ -117,6 +117,7 @@ public class LoginActivity extends Activity {
 
     public void register(View v){
 
+        finish();
         Intent i = new Intent(this,RegisterActivity.class);
         startActivity(i);
 
@@ -124,6 +125,7 @@ public class LoginActivity extends Activity {
 
     public void forgotPassword(View v){
 
+        finish();
         Intent i = new Intent(this,ResetPasswordActivity.class);
         startActivity(i);
 
