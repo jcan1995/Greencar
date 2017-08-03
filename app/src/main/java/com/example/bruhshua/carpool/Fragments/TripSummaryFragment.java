@@ -81,10 +81,7 @@ public class TripSummaryFragment extends Fragment {
             });
         }
 
-
         return v;
-
-
     }
 
     private void resetPage() {
