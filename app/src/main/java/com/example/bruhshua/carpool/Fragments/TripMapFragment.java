@@ -63,6 +63,35 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
         return tripMapFragment;
     }
 
+    /*
+        Separate Map Update for passengers who currently will not have PolyLines. To much data to transfer from the host to all his passengers.
+        Maybe, in the future, all the passengers can run their own Service request to get their polylines instead
+     */
+    public void updateMapForPassengers(TripDetails tripDetails, User user){
+
+        LatLng mDestinationLatLng = new LatLng(tripDetails.getmDestinationLat(),tripDetails.getmDestinationLng());
+        LatLng mCurrentLatLng = new LatLng(tripDetails.getmCurrentLat(),tripDetails.getmCurrentLng());
+
+        MarkerOptions destinationMarker = new MarkerOptions();
+        destinationMarker.position(mDestinationLatLng);
+        map.addMarker(destinationMarker);
+
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        builder.include(mCurrentLatLng);
+        builder.include(mDestinationLatLng);
+
+        LatLngBounds bounds = builder.build();
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 32);//32
+        map.moveCamera(cu);
+
+        TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetails, user);
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.plan_trip_fragment_container, tripDetailsFragment)
+                .commit();
+
+    }
+
     public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user) {
         Log.d("TripMapFragment", "inside updateMap");
 
@@ -85,7 +114,6 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
             CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 32);//32
             map.moveCamera(cu);
 
-//            map.getUiSettings().setScrollGesturesEnabled(false);
 
             TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetails, user);
             getActivity().getSupportFragmentManager()

@@ -44,6 +44,7 @@ public class CancelTripDialogFragment extends DialogFragment {
         cancelTripDialogFragment.setArguments(args);
         return cancelTripDialogFragment;
     }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -56,6 +57,7 @@ public class CancelTripDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         LayoutInflater inflater = LayoutInflater.from(getActivity());
+
         final View view = inflater.inflate(R.layout.cancel_trip_dialog_fragment,null);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());

@@ -14,6 +14,7 @@ public class TripDetails implements Serializable {
     private double points;
     private String currentAddress;
     private String destinationAddress;
+
     private double mCurrentLat;
     private double mCurrentLng;
 
@@ -21,6 +22,8 @@ public class TripDetails implements Serializable {
     private double mDestinationLng;
 
     private ArrayList<User> passengers;
+    private boolean isAckByPassenger;
+
     public TripDetails(){}
 
     public TripDetails(ArrayList<User> passengers,int numOfPeople, float miles, float points, String currentAddress, double currentLat, double currentLng, String destinationAddress, double destinationLat, double destinationLng) {
@@ -36,6 +39,15 @@ public class TripDetails implements Serializable {
         this.mDestinationLng = destinationLng;
 
     }
+
+    public boolean isAckByPassenger() {
+        return isAckByPassenger;
+    }
+
+    public void setAckByPassenger(boolean ackByPassenger) {
+        isAckByPassenger = ackByPassenger;
+    }
+
     public ArrayList<User> getPassengers() {
         return passengers;
     }
