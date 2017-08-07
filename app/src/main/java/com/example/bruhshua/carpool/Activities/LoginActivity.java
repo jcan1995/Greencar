@@ -50,10 +50,10 @@ public class LoginActivity extends Activity {
     private DatabaseReference users_ref;
 
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-    }
+//    @Override
+//    public void onBackPressed() {
+//        super.onBackPressed();
+//    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,9 +82,9 @@ public class LoginActivity extends Activity {
             mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
-                    Dialog.dismiss();
+                 //   Dialog.dismiss();
                     if (task.isSuccessful()) {
-                        Toast.makeText(getApplicationContext(), "Login Successful.", Toast.LENGTH_SHORT).show();
+                       // Toast.makeText(getApplicationContext(), "Login Successful.", Toast.LENGTH_SHORT).show();
                         users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -92,6 +92,7 @@ public class LoginActivity extends Activity {
                                     User authUser = message.getValue(User.class);
                                     if(email.equals(authUser.getEmail())){
                                         finish();
+                                        Dialog.dismiss();
                                         Intent i = new Intent(getApplicationContext(), MainActivity.class);
                                         i.putExtra("USER",authUser);
                                         startActivity(i);

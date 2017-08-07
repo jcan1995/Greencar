@@ -40,6 +40,8 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity implements PlanTripFragment.Callback, TripDetailsFragment.Callback, TripSummaryFragment.Callback, CancelTripDialogFragment.Callback {
 
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 101;
+
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
     private Toolbar toolBar;
@@ -58,6 +60,12 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Log.d("requestCode",""+requestCode);
+        switch (requestCode){
+            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION:
+                TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+                tripMapFragment.updateLocation();
+                break;
+        }
     }
 
     @Override
@@ -84,6 +92,8 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
+
+
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         toolBar = (Toolbar) findViewById(R.id.toolBar);
         setSupportActionBar(toolBar);
@@ -117,11 +127,13 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
                     case R.id.plan_trip:
 
-                        TripMapFragment tripMapFragment = TripMapFragment.newInstance(user);
-                        getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fragment_container,tripMapFragment)
-                                .commit();
+                       // if(!(fragment instanceof TripMapFragment)) {
+                            TripMapFragment tripMapFragment = TripMapFragment.newInstance(user);
+                            getSupportFragmentManager()
+                                    .beginTransaction()
+                                    .replace(R.id.fragment_container, tripMapFragment)
+                                    .commit();
+
                         break;
 
                     case R.id.my_trips:
@@ -181,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
             }
         });
+
         drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         actionBarDrawerToggle = new ActionBarDrawerToggle(this,drawerLayout,toolBar,R.string.open,R.string.close);
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
@@ -190,8 +203,11 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     }
 
     private void logout() {
+
         firebaseAuth.signOut();
+
         if(firebaseAuth.getCurrentUser() == null){
+
             finish();
             Intent i = new Intent(MainActivity.this,LoginActivity.class);
             startActivity(i);
@@ -207,10 +223,14 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if(actionBarDrawerToggle.onOptionsItemSelected(item)){
+            Log.d("MainActivity","item selected");
+
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
+
+
 
     @Override
     public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user) {
@@ -243,7 +263,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
             cancelTripDialogFragment.show(this.getFragmentManager(),"CANCELTRIP");
 
         }
-
 
     }
 

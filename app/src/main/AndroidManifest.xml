@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.SEND_SMS"/>
 
     <application
         android:allowBackup="true"
@@ -26,8 +27,8 @@
 
         <activity android:name=".Activities.RegisterActivity" android:label="Registration"/>
         <activity android:name=".Activities.ResetPasswordActivity" android:label="Reset Password"/>
-        <activity android:name=".Activities.MainActivity" android:label="Carpool" />
-        <activity android:name=".Activities.LoginActivity" android:label="Carpool"/>
+        <activity android:name=".Activities.MainActivity" android:label="Greencar" />
+        <activity android:name=".Activities.LoginActivity" android:label="Greencar"/>
 
 
         <meta-data

@@ -66,7 +66,7 @@ public class MyAccountFragment extends Fragment {
                     .load(authUser.getDownloadUrl())
                     .into(ivBackGroundImage);
             ivBackGroundImage.setAlpha(.5f);
-           // ivBackGroundImage.
+
             tvUserName.setText(authUser.getUserName());
             tvPoints.setText(" | " + String.valueOf(authUser.getPoints()));
            // tvEmail.setText(authUser.getEmail());

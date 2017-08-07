@@ -19,6 +19,10 @@ public class User implements Serializable{
     private HashMap<String,TripDetails> trips;
     private String downloadUrl;
     private String key;
+    private boolean isValidated;
+
+    private double currentLatitude;
+    private double currentLongitude;
 
     public User(){}
 
@@ -52,6 +56,31 @@ public class User implements Serializable{
         this.userName = displayName;
     }
 
+
+    public double getCurrentLatitude() {
+        return currentLatitude;
+    }
+
+    public void setCurrentLatitude(double currentLatitude) {
+        this.currentLatitude = currentLatitude;
+    }
+
+    public double getCurrentLongitude() {
+        return currentLongitude;
+    }
+
+    public void setCurrentLongitude(double currentLongitude) {
+        this.currentLongitude = currentLongitude;
+    }
+
+
+    public boolean isValidated() {
+        return isValidated;
+    }
+
+    public void setValidated(boolean validated) {
+        isValidated = validated;
+    }
 
     public double getPoints() {
         return points;

@@ -48,7 +48,7 @@ import org.w3c.dom.Text;
 
 public class TripDetailsFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
-    private User user;
+    private User authUser;
     private TripDetails tripDetails;
     private Button bStart;
 
@@ -129,13 +129,17 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
         final InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
 
-        user = (User) getArguments().getSerializable("USER");
+        authUser = (User) getArguments().getSerializable("USER");
         tripDetails = (TripDetails) getArguments().getSerializable("TRIPDETAILS");
+        setReceiveNotification();
+        notifyPassengers();
+
         Log.d("Info", "Coordinates: " + String.valueOf(tripDetails.getmDestinationLat()) + ", " + tripDetails.getmDestinationLng());
         Log.d("Info","Points: " + tripDetails.getPoints());
        // updatePoints();
 
         bStart = (Button) v.findViewById(R.id.bStart);
+
         bStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -153,6 +157,95 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
 
         return v;
+    }
+
+    //Set listener on "invited_trips" in json.
+    private void setReceiveNotification(){
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference users_ref = database.getReference("users").child(authUser.getKey()).child("invited_trips");
+        users_ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d("TripDetails","notification received");
+                Log.d("TripDetails","data: " + dataSnapshot.toString());
+
+                TripDetails tripDetail = dataSnapshot.getValue(TripDetails.class);
+                if(tripDetail != null){
+                    Toast.makeText(getContext(),"You've been invited for a trip",Toast.LENGTH_SHORT).show();
+                    //Means that another passenger received the tripdetail. Show dialog fragment to accept or decline
+                }
+              //  Toast.makeText(getContext(),"You've been invited for a trip",Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    private void notifyPassengers() {
+        Log.d("TripDetails","passenger size: " + tripDetails.getPassengers().size());
+        Toast.makeText(getContext(),"Invitation sent",Toast.LENGTH_SHORT).show();
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference users_ref = database.getReference("users");
+        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for(DataSnapshot messsageSnapshot : dataSnapshot.getChildren()){
+
+                    User user = messsageSnapshot.getValue(User.class);
+
+                    for(int i = 0; i < tripDetails.getPassengers().size(); i++){
+                        if(user.getEmail().equals(tripDetails.getPassengers().get(i).getEmail()) && !user.getEmail().equals(authUser.getEmail())){
+                            users_ref.child(user.getKey()).child("invited_trips").push().setValue(tripDetails);
+                        }
+
+
+                    }
+                }
+
+                Log.d("TripDetails","inOndataChange");
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+//
+//        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+//        final DatabaseReference users_ref = database.getReference("users");
+//
+//        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+//
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//                for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
+//
+//                    User user = messageSnapshot.getValue(User.class);
+//
+//                    for(int i = 0; i < tripDetail.getPassengers().size();i++){
+//
+//                        if(user.getUserName().equals(tripDetail.getPassengers().get(i).getUserName())){
+//                            users_ref.child(messageSnapshot.getKey()).child("trips").push().setValue(tripDetail);
+//                        }
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
+
     }
 
 
@@ -235,7 +328,7 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
     private void showSummary() {
 
-        callback.showSummary(tripDetails,user);
+        callback.showSummary(tripDetails,authUser);
 
     }
 

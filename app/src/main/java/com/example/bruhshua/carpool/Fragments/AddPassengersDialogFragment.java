@@ -6,6 +6,7 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Adapters.AddPassengersListViewAdapter;
 import com.example.bruhshua.carpool.Adapters.UsersListViewAdapter;
+import com.example.bruhshua.carpool.Manifest;
 import com.example.bruhshua.carpool.R;
 import com.example.bruhshua.carpool.Model.User;
 import com.google.firebase.database.DataSnapshot;
@@ -66,6 +68,8 @@ public class AddPassengersDialogFragment extends DialogFragment {
 
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         final View view = inflater.inflate(R.layout.add_passengers_dialog_fragment,null);
+
+        ActivityCompat.requestPermissions(getActivity(),new String[]{android.Manifest.permission.SEND_SMS},1);
         bufferedListView = (ListView) view.findViewById(R.id.lvBufferedPool);
 
         manager = LocalBroadcastManager.getInstance(getActivity());
@@ -82,6 +86,7 @@ public class AddPassengersDialogFragment extends DialogFragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 if(!isInPool(users.get(position))) {
+                    users.get(position).setValidated(false);
                     bufferedPassengers.add(users.get(position));
                     updatePool();
                     users.clear();

@@ -1,6 +1,6 @@
 package com.example.bruhshua.carpool.Fragments;
 
-import android.app.Activity;
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,27 +9,21 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -37,20 +31,13 @@ import com.example.bruhshua.carpool.Adapters.UsersListViewAdapter;
 import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
 import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.R;
-import com.example.bruhshua.carpool.ServiceRequests.FetchAddressFromService;
-import com.example.bruhshua.carpool.ServiceRequests.FetchLocationFromService;
+import com.example.bruhshua.carpool.Services.FetchAddressFromService;
+import com.example.bruhshua.carpool.Services.FetchLocationFromService;
 import com.example.bruhshua.carpool.Model.User;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -77,10 +64,11 @@ import java.util.List;
      */
 
 //Todo: Switch add passengers view with details fragment.
-    public class PlanTripFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class PlanTripFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 101;
-
+    private static final String SMS_SENT = "SMS_SENT";
+    private static final String SMS_DELIVERED = "SMS_DELIVERED";
     private TripDetails tripDetail;
 
     private static User authUser;
@@ -92,6 +80,7 @@ import java.util.List;
 
     private Location mCurrentLocation;
     private Location mDestinationLocation;
+    private Location  mValidationLocation;
 
     private LatLng mCurrentLatLng;
     private LatLng mDestinationLatLng;
@@ -111,7 +100,7 @@ import java.util.List;
     public static PlanTripFragment newInstance(User user) {
         PlanTripFragment planTripFragment = new PlanTripFragment();
         Bundle args = new Bundle();
-        args.putSerializable("USER",user);
+        args.putSerializable("USER", user);
         planTripFragment.setArguments(args);
         return planTripFragment;
     }
@@ -124,10 +113,11 @@ import java.util.List;
         public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user);
     }
 
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if(context instanceof Callback){
+        if (context instanceof Callback) {
             callback = (Callback) context;
         }
 
@@ -164,33 +154,38 @@ import java.util.List;
 
     }
 
-    private void initBroadcastReceiver(){
+    private void initBroadcastReceiver() {
+
+
         manager = LocalBroadcastManager.getInstance(getContext());
         MyBroadCastReceiver receiver = new MyBroadCastReceiver();
+
         IntentFilter filter = new IntentFilter();
+
         filter.addAction("com.action.getdestlatlng");
         filter.addAction("com.action.getdestaddress");
         filter.addAction("com.action.getstepslatlng");
         filter.addAction("com.action.getpool");
 
-        manager.registerReceiver(receiver,filter);
+        manager.registerReceiver(receiver, filter);
     }
 
-    public void updateUI(){
+
+    public void updateUI() {
 
         //Todo: Construct MapUIUpdate POJO send through callback to TripMapFragment.
-       if(mCurrentLatLng != null && mDestinationLatLng != null) {
+        if (mCurrentLatLng != null && mDestinationLatLng != null) {
 
-           MapUpdatePOJO mapUpdatePOJO = new MapUpdatePOJO(mPolyOptions,mCurrentLatLng,mDestinationLatLng);
+            MapUpdatePOJO mapUpdatePOJO = new MapUpdatePOJO(mPolyOptions, mCurrentLatLng, mDestinationLatLng);
 
-           if(callback != null){
-               callback.updateMap(mapUpdatePOJO,tripDetail, authUser);
-           }else{
-               Log.d("updateMap","callback is null.");
-           }
+            if (callback != null) {
+                callback.updateMap(mapUpdatePOJO, tripDetail, authUser);
+            } else {
+                Log.d("updateMap", "callback is null.");
+            }
 
-        }else{
-            Log.d("PlanTrip","LatLngs are null bitch");
+        } else {
+            Log.d("PlanTrip", "LatLngs are null bitch");
         }
 
         mPolyOptions.clear();
@@ -200,7 +195,7 @@ import java.util.List;
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.set_destination_add_passengers_layout, container, false);
-
+        dialog = new ProgressDialog(getActivity());
         passengers = new ArrayList<>();
         passengers.add(authUser);
 
@@ -213,7 +208,7 @@ import java.util.List;
             @Override
             public void onClick(View v) {
 
-                if(passengers != null) {
+                if (passengers != null) {
 //
 //                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("sms:" + "6199426705"));
 //                    intent.putExtra("sms_body", "Hi");
@@ -237,17 +232,17 @@ import java.util.List;
             @Override
             public void onClick(View v) {
 
-                if(!etDesinationLocation.getText().toString().equals("") && currentAddress != null){
+                if (!etDesinationLocation.getText().toString().equals("") && currentAddress != null) {
                     dialog = new ProgressDialog(getActivity());
                     dialog.setMessage("Please wait...");
                     dialog.show();
 
-                    validatePassengers();
+                    // validatePassengers();
                     destinationAddress = etDesinationLocation.getText().toString();
                     getDestinationAddress(etDesinationLocation.getText().toString());
                     getDirections(etDesinationLocation.getText().toString());// Just pass in the destination string since current address is initialized in onConnect interface method.
 
-                }else{
+                } else {
                     Toast.makeText(getActivity(), "Please Enter an Address.", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -261,11 +256,43 @@ import java.util.List;
 
     private void validatePassengers() {
 
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        for(int i = 0; i < passengers.size();i++) {
 
+            if(!passengers.get(i).isValidated()) {
+                //mValidationLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            }
+
+        }
+//        Log.d("validation","CurrentLocation: " + mValidationLocation.toString());
+
+
+
+
+//        PendingIntent piSend = PendingIntent.getBroadcast(getActivity(), 0, new Intent(SMS_SENT), 0);
+//        PendingIntent piDelivered = PendingIntent.getBroadcast(getActivity(), 0, new Intent(SMS_DELIVERED), 0);
+//       // PendingIntent piSend = broadcastReceiver.;
+//
+//        SmsManager manager = SmsManager.getDefault();
+//        for(int i = 0; i < 1; i++) {
+//            if(!passengers.get(i).isValidated()) {
+//                manager.sendTextMessage(passengers.get(i).getNumber(),null,"Hello",piSend,piDelivered);
+//            }
+//        }
 
 
 
     }
+
 
     private void getDestinationAddress(String destinationAddress){
         try{
@@ -322,7 +349,7 @@ import java.util.List;
             Log.d("current","lat:" + mCurrentLocation.getLatitude());
             Log.d("current","lon:" + mCurrentLocation.getLongitude());
 
-            dialog = new ProgressDialog(getActivity());
+//            dialog = new ProgressDialog(getActivity());
             dialog.setMessage("Please wait...");
             dialog.show();
 
@@ -366,7 +393,19 @@ import java.util.List;
                 case "com.action.getpool":
 
                     passengers = (ArrayList<User>) bundle.getSerializable("POOL");
+
+                    //notifyPassengers();
+                  //  validatePassengers();//First through texts
                     updatePassengersView();
+                    break;
+
+                case SMS_SENT:
+                    Log.d("PlanTrip", "SMS_SENT");
+
+                    break;
+
+                case SMS_DELIVERED:
+                    Log.d("PlanTrip", "SMS_DELIVERED");
                     break;
 
                 case "":
@@ -376,6 +415,12 @@ import java.util.List;
             }
         }
     }
+
+    //Upon inviting passengers, update all user's json with a new trip. Set a listener,
+    // when fired show a dialogfragment to the user to either accept or decline the trip. If accepted, keep the data in json
+    // else delete it.
+
+
 
     private void updatePassengersView() {
 

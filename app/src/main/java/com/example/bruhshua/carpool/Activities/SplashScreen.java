@@ -24,32 +24,40 @@ import com.google.firebase.database.ValueEventListener;
 public class SplashScreen extends Activity {
 
     private FirebaseAuth firebaseAuth;
-    private static int SPLASH_TIME_OUT = 1500;
+    private static int SPLASH_TIME_OUT = 1000;
     private DatabaseReference users_ref;
     private FirebaseDatabase database;
 
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        Log.d("SplashScreen","onStart");
+
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash_screen);
-//        finish();
-//        Intent i = new Intent(getApplicationContext(), LoginActivity.class);
-//        startActivity(i);
+
         firebaseAuth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance();
+        users_ref = database.getReference("users");
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
+                Log.d("SplashScreen","in run");
 
                 if(firebaseAuth.getCurrentUser() != null){
-
-                    database = FirebaseDatabase.getInstance();
-                    users_ref = database.getReference("users");
+                    Log.d("SplashScreen","after condition check");
 
                     users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
+                            Log.d("SplashScreen","in onDataChange ");
 
                             for(DataSnapshot message: dataSnapshot.getChildren()){
                                 User authUser = message.getValue(User.class);
@@ -64,22 +72,31 @@ public class SplashScreen extends Activity {
                                 }
                             }
 
-
+                            Log.d("SplashScreen","in onDataChange after for loop");
                         }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
-
+                            Log.d("SplashScreen","in onCancelled");
                         }
                     });
                 }else{
-
+                    Log.d("SplashScreen","in else ");
                     finish();
                     Intent i = new Intent(getApplicationContext(), LoginActivity.class);
                     startActivity(i);
                 }
 
             }
+
+
+
         },SPLASH_TIME_OUT);
+        Log.d("SplashScreen","after timeout");
+
+        finish();
+        Intent i = new Intent(getApplicationContext(), LoginActivity.class);
+        startActivity(i);
+        Log.d("SplashScreen","after timeout");
     }
 }

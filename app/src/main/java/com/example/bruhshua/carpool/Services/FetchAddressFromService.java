@@ -1,4 +1,4 @@
-package com.example.bruhshua.carpool.ServiceRequests;
+package com.example.bruhshua.carpool.Services;
 
 import android.content.Context;
 import android.content.Intent;
@@ -6,9 +6,6 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
-
-import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

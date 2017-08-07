@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.example.bruhshua.carpool.Activities.MainActivity;
 import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
 import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.Model.User;
@@ -121,7 +122,7 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
 
     }
 
-    public void cancelTrip(User user){
+    public void cancelTrip(User user) {
         map.clear();
         PlanTripFragment planTripFragment = PlanTripFragment.newInstance(user);
         getActivity().getSupportFragmentManager()
@@ -164,34 +165,31 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.trip_map_fragment,container,false);
+        View v = inflater.inflate(R.layout.trip_map_fragment, container, false);
+
         v.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_BACK) {
-                    Toast.makeText(getActivity(),"Back pressed",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Back pressed", Toast.LENGTH_SHORT).show();
 //                    return true;
                 }
                 return true;
             }
         });
+
         manager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-        }
         mCriteria = new Criteria();
         bestProvider = String.valueOf(manager.getBestProvider(mCriteria, true));
-        location = manager.getLastKnownLocation(bestProvider);
-        Log.d("PlanTrip","location" + location.toString());
+
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            location = manager.getLastKnownLocation(bestProvider);
+//            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+
+        }
         PlanTripFragment planTripFragment = PlanTripFragment.newInstance(authUser);
         getFragmentManager().beginTransaction()
-                .add(R.id.plan_trip_fragment_container,planTripFragment)
+                .add(R.id.plan_trip_fragment_container, planTripFragment)
                 .commit();
 
 
@@ -212,24 +210,28 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
-        Log.d("TripMapFragment","onMapReady called");
+        Log.d("TripMapFragment", "onMapReady called");
         map = googleMap;
         map.getUiSettings().setScrollGesturesEnabled(false);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
 
     }
 
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        Log.d("TripMapFragment", "onConnected called");
 
         if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             //This method doesn't provide specific data that we need to use. Such as LatLng
             //Maybe we can use this method just for its UI.
-
             map.setMyLocationEnabled(true);
-            Log.d("PlanTrip","setMyLocationEnabled");
+            manager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+            mCriteria = new Criteria();
+            bestProvider = String.valueOf(manager.getBestProvider(mCriteria, true));
+            location = manager.getLastKnownLocation(bestProvider);
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+            Log.d("PlanTrip", "setMyLocationEnabled");
         } else {
             //Todo: Maybe show dialog that tells users why we need their location.
             ActivityCompat.requestPermissions(getActivity(),
@@ -247,5 +249,27 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    public void updateLocation() {
+        Log.d("TripMapFragment","inside updateLocation");
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            map.setMyLocationEnabled(true);
+            manager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+            mCriteria = new Criteria();
+            bestProvider = String.valueOf(manager.getBestProvider(mCriteria, true));
+            location = manager.getLastKnownLocation(bestProvider);
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+            return;
+        }
+//        location = manager.getLastKnownLocation(bestProvider);
+//        map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
     }
 }
