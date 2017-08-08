@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +31,7 @@ import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
 import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -57,11 +59,9 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     private FirebaseAuth firebaseAuth;
 
     private ProgressDialog dialog;
-
-
     private TripDetails tripInProgress;
 
-    private boolean isOnConfirmationFragment = false;
+  //  private boolean isOnConfirmationFragment = false;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -79,14 +79,29 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     protected void onPause() {
         super.onPause();
 
-        Log.d("lifecyle", "onPause called");
+        Log.d("lifecycleCheck", "MainActivity: onPause called");
+
+    }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d("lifecycleCheck", "MainActivity: onStart called");
+
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d("lifecycleCheck", "MainActivity: onRestart called");
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d("lifecyle", "onResume called");
+        Log.d("lifecycleCheck", "MainActivity: onResume called");
 
 
     }
@@ -102,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
+        Log.d("lifecycleCheck", "MainActivity: onCreate called");
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         toolBar = (Toolbar) findViewById(R.id.toolBar);
@@ -112,9 +128,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
         user = (User) getIntent().getSerializableExtra("USER");
 
-       // setReceiveNotification();
         setReceiveNotification();
-
 
         TripMapFragment tripMapFragment = TripMapFragment.newInstance(null,user);
         getSupportFragmentManager()
@@ -140,14 +154,12 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
                     case R.id.plan_trip:
 
-                        // if(!(fragment instanceof TripMapFragment)) {
-                        if(tripInProgress == null) {
-                            TripMapFragment tripMapFragment = TripMapFragment.newInstance(null, user);
+                            TripMapFragment tripMapFragment = TripMapFragment.newInstance(tripDetails, user);
                             getSupportFragmentManager()
                                     .beginTransaction()
                                     .replace(R.id.fragment_container, tripMapFragment)
                                     .commit();
-                        }
+
 
                         break;
 
@@ -251,8 +263,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     @Override
     public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user) {
 
-        Log.d("MainActivity", "inside updateMap");
-        isOnConfirmationFragment = true;
+        //isOnConfirmationFragment = true;
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         tripMapFragment.updateMap(mapUpdatePOJO, tripDetails, user);
 
@@ -263,6 +274,11 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         tripMapFragment.showSummary(tripDetails, user);
     }
+
+//    @Override
+//    public void updateMap(CameraUpdate cu) {
+//
+//    }
 
 
     @Override
@@ -275,11 +291,17 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     public void onBackPressed() {
 //        super.onBackPressed(); <--- is what closes the app
 
-        Log.d("TripDetails","onBackPressed");
+        Log.d("onBackPressed","onBackPressed");
 
-        if (isOnConfirmationFragment) {
+        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        Fragment hostedFragment = tripMapFragment.getFragmentManager().findFragmentById(R.id.plan_trip_fragment_container);
+
+        if(hostedFragment instanceof TripDetailsFragment){
+            Log.d("onBackPressed","instaceof TripDetails");
             CancelTripDialogFragment cancelTripDialogFragment = CancelTripDialogFragment.newInstance();
             cancelTripDialogFragment.show(this.getFragmentManager(), "CANCELTRIP");
+        }else{
+            Log.d("onBackPressed","else");
 
         }
 
@@ -287,9 +309,29 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
     @Override
     public void cancelTrip() {
-        isOnConfirmationFragment = false;
+      //  isOnConfirmationFragment = false;
+        tripInProgress = null;
+        tripDetails = null;
+        deleteTripInProgress();
+
+
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         tripMapFragment.cancelTrip(user);
+    }
+
+    private void deleteTripInProgress() {
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference users_ref = database.getReference("users").child(user.getKey()).child("trip_in_progress");
+        users_ref.removeValue(new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                Log.d("deletionTest","onComplete: deleteTripInProgress");
+
+            }
+        });
+
+
     }
 
     //Checks "trip_in_progress" field in JSON to see if the user is currently on a trip. There will always only be 1 trip in that field.
@@ -301,7 +343,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         users_ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d("MainAc","onDataChange");
 
                 if(tripDetails == null) {
                     tripDetails = dataSnapshot.getValue(TripDetails.class);
@@ -314,7 +355,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
                     //Means that another passenger received the tripdetail. Show dialog fragment to accept or decline
                 }else if(tripDetails != null && tripDetails.isAckByPassenger()){
-                    Log.d("MainAc","inside 3rd condition");
 
                     tripInProgress = tripDetails;
 

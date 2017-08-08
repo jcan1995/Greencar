@@ -120,6 +120,7 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
         if (context instanceof Callback) {
             callback = (Callback) context;
         }
+        Log.d("lifecycleCheck", "PlanTripFragment: onAttach called");
 
     }
 
@@ -127,6 +128,14 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
     public void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
+        Log.d("lifecycleCheck", "PlanTripFragment: onStart called");
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("lifecycleCheck", "PlanTripFragment: onResume called");
 
     }
 
@@ -134,12 +143,22 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
     public void onStop() {
         super.onStop();
         mGoogleApiClient.disconnect();
+        Log.d("lifecycleCheck", "PlanTripFragment: onStop called");
+
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d("lifecycleCheck", "PlanTripFragment: onPause called");
 
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("lifecycleCheck", "PlanTripFragment: onCreate called");
 
         this.authUser = (User) getArguments().getSerializable("USER");
         this.authUser.setHost(true);
@@ -182,11 +201,9 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
             if (callback != null) {
                 callback.updateMap(mapUpdatePOJO, tripDetail, authUser);
             } else {
-                Log.d("updateMap", "callback is null.");
             }
 
         } else {
-            Log.d("PlanTrip", "LatLngs are null bitch");
         }
 
         mPolyOptions.clear();
@@ -196,6 +213,8 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.set_destination_add_passengers_layout, container, false);
+        Log.d("lifecycleCheck", "PlanTripFragment: onCreateView called");
+
         dialog = new ProgressDialog(getActivity());
         passengers = new ArrayList<>();
         passengers.add(authUser);
@@ -249,49 +268,6 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
         return v;
     }
 
-    //Send texts to confirm they are in the car
-    //Check passengers locations to ensure they're relatively close together.
-
-    private void validatePassengers() {
-
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        for(int i = 0; i < passengers.size();i++) {
-
-            if(!passengers.get(i).isValidated()) {
-                //mValidationLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-            }
-
-        }
-//        Log.d("validation","CurrentLocation: " + mValidationLocation.toString());
-
-
-
-
-//        PendingIntent piSend = PendingIntent.getBroadcast(getActivity(), 0, new Intent(SMS_SENT), 0);
-//        PendingIntent piDelivered = PendingIntent.getBroadcast(getActivity(), 0, new Intent(SMS_DELIVERED), 0);
-//       // PendingIntent piSend = broadcastReceiver.;
-//
-//        SmsManager manager = SmsManager.getDefault();
-//        for(int i = 0; i < 1; i++) {
-//            if(!passengers.get(i).isValidated()) {
-//                manager.sendTextMessage(passengers.get(i).getNumber(),null,"Hello",piSend,piDelivered);
-//            }
-//        }
-
-
-
-    }
-
-
     private void getDestinationAddress(String destinationAddress){
         try{
             FetchLocationFromService fetchDestinationLatLng = new FetchLocationFromService(destinationAddress,getContext());
@@ -344,8 +320,6 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
         //mCurrentLocation.get
         if (mCurrentLocation != null) {
 
-            Log.d("current","lat:" + mCurrentLocation.getLatitude());
-            Log.d("current","lon:" + mCurrentLocation.getLongitude());
 
 //            dialog = new ProgressDialog(getActivity());
             dialog.setMessage("Please wait...");
@@ -398,12 +372,10 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
                     break;
 
                 case SMS_SENT:
-                    Log.d("PlanTrip", "SMS_SENT");
 
                     break;
 
                 case SMS_DELIVERED:
-                    Log.d("PlanTrip", "SMS_DELIVERED");
                     break;
 
                 case "":
@@ -594,7 +566,6 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
 
             }catch (Exception e){
 
-                Log.d("PlanTrip","doInBackgroud exception");
                 e.printStackTrace();
             }
             return null;

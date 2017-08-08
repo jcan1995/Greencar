@@ -34,6 +34,11 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -65,6 +70,7 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
     public interface Callback {
         public void showSummary(TripDetails tripDetails, User user);
+      //  void updateMap(CameraUpdate cu);
     }
 
     @Override
@@ -73,6 +79,8 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
         if(context instanceof PlanTripFragment.Callback){
             callback = (TripDetailsFragment.Callback) context;
         }
+        Log.d("lifecycleCheck", "TripDetailsFragment: onAttach called");
+
 
     }
     public static TripDetailsFragment newInstance(TripDetails tripDetails, User user) {
@@ -93,6 +101,8 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+        Log.d("lifecycleCheck", "TripDetailsFragment: onCreate called");
+
     }
 
 
@@ -100,18 +110,68 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
     public void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
+        Log.d("lifecycleCheck", "TripDetailsFragment: onStart called");
+
 
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("lifecycleCheck", "TripDetailsFragment: onResume called");
+     //   callback.updateMap(updateMapForPassengers(tripDetails,authUser));
+
+    }
+
+//    public CameraUpdate updateMapForPassengers(TripDetails tripDetails, User user){
+//
+//        LatLng mDestinationLatLng = new LatLng(tripDetails.getmDestinationLat(),tripDetails.getmDestinationLng());
+//        LatLng mCurrentLatLng = new LatLng(tripDetails.getmCurrentLat(),tripDetails.getmCurrentLng());
+////
+////        Log.d("updateMapForPassengers","Destination LatLng: " + mDestinationLatLng.toString());
+////        Log.d("updateMapForPassengers","Current LatLng: " + mCurrentLatLng.toString());
+////
+////        MarkerOptions destinationMarker = new MarkerOptions();
+////        destinationMarker.position(mDestinationLatLng);
+//
+//        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+//        builder.include(mCurrentLatLng);
+//        builder.include(mDestinationLatLng);
+//
+//        LatLngBounds bounds = builder.build();
+//        //CameraUpdateFactory.newLatLngBounds(bounds, 32);//32
+//
+//        return CameraUpdateFactory.newLatLngBounds(bounds, 32);
+//
+//    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d("lifecycleCheck", "TripDetailsFragment: onStop called");
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d("lifecycleCheck", "TripDetailsFragment: onPause called");
+
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         final InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+        Log.d("lifecycleCheck", "TripDetailsFragment: onActivityCreated called");
+
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.d("lifecycleCheck", "TripDetailsFragment: onCreateView called");
 
         View v = inflater.inflate(R.layout.confirm_trip_fragment, container, false);
         v.setOnKeyListener(new View.OnKeyListener() {
