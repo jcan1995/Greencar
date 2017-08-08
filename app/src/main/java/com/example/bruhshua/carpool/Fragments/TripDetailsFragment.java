@@ -183,9 +183,6 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
     private void notifyPassengers() {
 
-        Log.d("TripDetails","other passenger: " + tripDetails.getPassengers().get(0).getUserName());
-        //Toast.makeText(getContext(),"Invitation sent",Toast.LENGTH_SHORT).show();
-
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference users_ref = database.getReference("users");
         users_ref.addListenerForSingleValueEvent(new ValueEventListener() {

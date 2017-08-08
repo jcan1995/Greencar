@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -17,7 +16,6 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.example.bruhshua.carpool.Fragments.AboutFragment;
-import com.example.bruhshua.carpool.Fragments.AddPassengersDialogFragment;
 import com.example.bruhshua.carpool.Fragments.CancelTripDialogFragment;
 import com.example.bruhshua.carpool.Fragments.ContactFragment;
 import com.example.bruhshua.carpool.Fragments.InvitationDialogFragment;
@@ -51,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
     private Toolbar toolBar;
-    private TripDetails tripDetail;
+    private TripDetails tripDetails;
     private NavigationView nvDrawer;
 
     private User user; //Todo:Get the current user using the application from firebase.
@@ -59,6 +57,9 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     private FirebaseAuth firebaseAuth;
 
     private ProgressDialog dialog;
+
+
+    private TripDetails tripInProgress;
 
     private boolean isOnConfirmationFragment = false;
 
@@ -111,8 +112,11 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
         user = (User) getIntent().getSerializableExtra("USER");
 
+       // setReceiveNotification();
         setReceiveNotification();
-        TripMapFragment tripMapFragment = TripMapFragment.newInstance(user);
+
+
+        TripMapFragment tripMapFragment = TripMapFragment.newInstance(null,user);
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_container, tripMapFragment)
@@ -137,11 +141,13 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                     case R.id.plan_trip:
 
                         // if(!(fragment instanceof TripMapFragment)) {
-                        TripMapFragment tripMapFragment = TripMapFragment.newInstance(user);
-                        getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fragment_container, tripMapFragment)
-                                .commit();
+                        if(tripInProgress == null) {
+                            TripMapFragment tripMapFragment = TripMapFragment.newInstance(null, user);
+                            getSupportFragmentManager()
+                                    .beginTransaction()
+                                    .replace(R.id.fragment_container, tripMapFragment)
+                                    .commit();
+                        }
 
                         break;
 
@@ -197,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                 item.setCheckable(true);
                 setTitle(item.getTitle());
                 drawerLayout.closeDrawers();
+//                setReceiveNotification();
 
                 return true;
 
@@ -208,6 +215,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        setReceiveNotification();
 
     }
 
@@ -256,36 +264,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         tripMapFragment.showSummary(tripDetails, user);
     }
 
-//    @Override
-//    public void notifyPassengers() {
-//
-//        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-//        final DatabaseReference users_ref = database.getReference("users").child(user.getKey()).child("invited_trips");
-//
-//        users_ref.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                Log.d("TripDetails", "notification received");
-//                Log.d("TripDetails", "data: " + dataSnapshot.toString());
-//
-//                TripDetails tripDetail = dataSnapshot.getValue(TripDetails.class);
-//                if (tripDetail != null) {
-//                    Toast.makeText(getApplicationContext(), "You've been invited for a trip", Toast.LENGTH_SHORT).show();
-//                    //  callback.notifyPassengers(tripDetail);
-//                    //Means that another passenger received the tripdetail. Show dialog fragment to accept or decline
-//                }
-//                //  Toast.makeText(getContext(),"You've been invited for a trip",Toast.LENGTH_SHORT).show();
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-//
-//
-//    }
-
 
     @Override
     public void Reset(User user) {
@@ -323,35 +301,32 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         users_ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d("TripDetails","notification received");
-                Log.d("TripDetails","data: " + dataSnapshot.toString());
+                Log.d("MainAc","onDataChange");
 
-                if(tripDetail == null) {
-                    tripDetail = dataSnapshot.getValue(TripDetails.class);
-//                    if(tripDetail.getPassengers() == null){
-//                        Log.d("TripDetails","notification received");
-//
-//                    }
+                if(tripDetails == null) {
+                    tripDetails = dataSnapshot.getValue(TripDetails.class);
                 }
-                if(tripDetail != null && !tripDetail.isAckByPassenger()){
-                   // Toast.makeText(getApplicationContext(),"You've been invited for a trip",Toast.LENGTH_LONG).show();
-                    Log.d("TripDetails","key: " + dataSnapshot.getValue().toString());
+                if(tripDetails != null && !tripDetails.isAckByPassenger()){
 
-                    //final DatabaseReference passengers_ref = users_ref.child(dataSnapshot.getValue())
-                    tripDetail.setAckByPassenger(true);
-                    if(tripDetail.getPassengers() == null){
-                        //Todo: Set Arraylist of passengers manually.
-                        Log.d("TripDetails","passengers is null right when received");
-
-                    }
-                    testMethod();
-//                    InvitationDialogFragment invitationDialogFragment = InvitationDialogFragment.newInstance(tripDetail);
-//                    invitationDialogFragment.show(getFragmentManager(),"TRIP_INVITATION");
-
+                    //tripDetail.setAckByPassenger(true);
+                   // updateTripDetail(tripDetail);
+                    toInvitationDialogFragment();
 
                     //Means that another passenger received the tripdetail. Show dialog fragment to accept or decline
+                }else if(tripDetails != null && tripDetails.isAckByPassenger()){
+                    Log.d("MainAc","inside 3rd condition");
+
+                    tripInProgress = tripDetails;
+
+                    TripMapFragment tripMapFragment = TripMapFragment.newInstance(tripDetails,user);
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragment_container, tripMapFragment)
+                            .commit();
+
+
+                    //Automatically take user to TripDetailFragment with the tripdetails.
                 }
-                //  Toast.makeText(getContext(),"You've been invited for a trip",Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -362,8 +337,8 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
     }
 
-    private void testMethod() {
-        InvitationDialogFragment invitationDialogFragment = InvitationDialogFragment.newInstance(tripDetail);
+    private void toInvitationDialogFragment() {
+        InvitationDialogFragment invitationDialogFragment = InvitationDialogFragment.newInstance(tripDetails,user);
         invitationDialogFragment.show(this.getFragmentManager(),"TRIP_INVITATION");
     }
 

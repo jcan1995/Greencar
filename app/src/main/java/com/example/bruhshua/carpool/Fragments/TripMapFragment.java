@@ -55,10 +55,13 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     private Criteria mCriteria;
     private String bestProvider;
 
-    public static TripMapFragment newInstance(User user) {
+    private TripDetails tripInProgress;
+
+    public static TripMapFragment newInstance(TripDetails tripInProgress,User user) {
         TripMapFragment tripMapFragment = new TripMapFragment();
         Bundle args = new Bundle();
         args.putSerializable("USER", user);
+        args.putSerializable("TRIPINPROGRESS",tripInProgress);
         tripMapFragment.setArguments(args);
         return tripMapFragment;
     }
@@ -74,6 +77,9 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
 
         MarkerOptions destinationMarker = new MarkerOptions();
         destinationMarker.position(mDestinationLatLng);
+        if(map == null){
+            Log.d("TripMap","map is null");
+        }
         map.addMarker(destinationMarker);
 
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
@@ -177,8 +183,10 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("TripMap","onCreate");
 
         this.authUser = (User) getArguments().getSerializable("USER");
+        this.tripInProgress = (TripDetails) getArguments().getSerializable("TRIPINPROGRESS");
 
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
@@ -194,6 +202,7 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.trip_map_fragment, container, false);
+        Log.d("TripMap","onCreateView");
 
         v.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -215,11 +224,13 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
 //            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
 
         }
-        PlanTripFragment planTripFragment = PlanTripFragment.newInstance(authUser);
-        getFragmentManager().beginTransaction()
-                .add(R.id.plan_trip_fragment_container, planTripFragment)
-                .commit();
 
+         if(tripInProgress == null) {
+           PlanTripFragment planTripFragment = PlanTripFragment.newInstance(authUser);
+           getFragmentManager().beginTransaction()
+                 .add(R.id.plan_trip_fragment_container, planTripFragment)
+                 .commit();
+         }
 
         mSupportMapFragment = SupportMapFragment.newInstance();
         FragmentManager fm = getFragmentManager();
@@ -238,9 +249,15 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
-        Log.d("TripMapFragment", "onMapReady called");
+        Log.d("TripMap", "onMapReady called");
         map = googleMap;
         map.getUiSettings().setScrollGesturesEnabled(false);
+        if(tripInProgress != null){
+            updateMapForPassengers(tripInProgress,authUser);
+        }else{
+            Log.d("TripMap", "tripInProgress is null");
+
+        }
 
     }
 

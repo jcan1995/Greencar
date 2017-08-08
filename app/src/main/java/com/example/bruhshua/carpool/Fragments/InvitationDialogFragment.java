@@ -12,7 +12,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import com.example.bruhshua.carpool.Model.TripDetails;
+import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 /**
  * Created by bruhshua on 8/7/17.
@@ -24,6 +30,7 @@ public class InvitationDialogFragment extends DialogFragment {
 
     private Callback callback;
     private TripDetails tripDetails;
+    private User authUser;
 
     public interface Callback {
         public void declineInvitation();
@@ -31,11 +38,12 @@ public class InvitationDialogFragment extends DialogFragment {
     }
 
 
-    public static InvitationDialogFragment newInstance(TripDetails tripDetails){
+    public static InvitationDialogFragment newInstance(TripDetails tripDetails,User user){
 
         InvitationDialogFragment invitationDialogFragment = new InvitationDialogFragment();
         Bundle args = new Bundle();
           args.putSerializable("TRIPDETAILS",tripDetails);
+        args.putSerializable("USER",user);
         invitationDialogFragment.setArguments(args);
         return invitationDialogFragment;
     }
@@ -73,7 +81,7 @@ public class InvitationDialogFragment extends DialogFragment {
 
         LayoutInflater inflater = LayoutInflater.from(getActivity());
         final View view = inflater.inflate(R.layout.invitation_dialog_fragment,null);
-
+        authUser = (User) getArguments().getSerializable("USER");
         tripDetails = (TripDetails) getArguments().getSerializable("TRIPDETAILS");
         if(callback == null){
             Log.d("Invitation", "Callback is null");
@@ -87,6 +95,8 @@ public class InvitationDialogFragment extends DialogFragment {
             public void onClick(DialogInterface dialog, int which) {
 
                 //Takes user to their trip that's in progress.
+                tripDetails.setAckByPassenger(true);
+                updateTripDetail(tripDetails);
                 callback.acceptInvitation(tripDetails);
 
             }
@@ -104,6 +114,27 @@ public class InvitationDialogFragment extends DialogFragment {
         return builder.create();
     }
 
+    private void updateTripDetail(final TripDetails tripDetail) {
 
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference users_ref = database.getReference("users").child(authUser.getKey()).child("trip_in_progress");
+
+        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                users_ref.setValue(tripDetail);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+
+    }
 
 }
