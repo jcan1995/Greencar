@@ -297,6 +297,8 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     public void onBackPressed() {
 //        super.onBackPressed(); <--- is what closes the app
 
+        Log.d("TripDetails","onBackPressed");
+
         if (isOnConfirmationFragment) {
             CancelTripDialogFragment cancelTripDialogFragment = CancelTripDialogFragment.newInstance();
             cancelTripDialogFragment.show(this.getFragmentManager(), "CANCELTRIP");
@@ -333,7 +335,9 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                 }
                 if(tripDetail != null && !tripDetail.isAckByPassenger()){
                    // Toast.makeText(getApplicationContext(),"You've been invited for a trip",Toast.LENGTH_LONG).show();
+                    Log.d("TripDetails","key: " + dataSnapshot.getValue().toString());
 
+                    //final DatabaseReference passengers_ref = users_ref.child(dataSnapshot.getValue())
                     tripDetail.setAckByPassenger(true);
                     if(tripDetail.getPassengers() == null){
                         //Todo: Set Arraylist of passengers manually.

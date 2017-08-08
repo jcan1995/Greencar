@@ -142,6 +142,7 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
         super.onCreate(savedInstanceState);
 
         this.authUser = (User) getArguments().getSerializable("USER");
+        this.authUser.setHost(true);
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
                     .addConnectionCallbacks(this)
@@ -209,10 +210,6 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
             public void onClick(View v) {
 
                 if (passengers != null) {
-//
-//                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("sms:" + "6199426705"));
-//                    intent.putExtra("sms_body", "Hi");
-//                    startActivity(intent);
 
                     Bundle args = new Bundle();
                     args.putSerializable("POOL", passengers);
@@ -233,6 +230,7 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
             public void onClick(View v) {
 
                 if (!etDesinationLocation.getText().toString().equals("") && currentAddress != null) {
+                    passengers.get(0).setHost(true);
                     dialog = new ProgressDialog(getActivity());
                     dialog.setMessage("Please wait...");
                     dialog.show();

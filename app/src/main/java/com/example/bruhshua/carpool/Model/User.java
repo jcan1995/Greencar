@@ -20,7 +20,7 @@ public class User implements Serializable{
     private String downloadUrl;
     private String key;
     private boolean isValidated;
-
+    private boolean isHost;
     private double currentLatitude;
     private double currentLongitude;
 
@@ -56,6 +56,14 @@ public class User implements Serializable{
         this.userName = displayName;
     }
 
+
+    public boolean isHost() {
+        return isHost;
+    }
+
+    public void setHost(boolean host) {
+        isHost = host;
+    }
 
     public double getCurrentLatitude() {
         return currentLatitude;

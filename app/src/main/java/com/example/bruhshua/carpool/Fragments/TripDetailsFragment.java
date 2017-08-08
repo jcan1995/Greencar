@@ -131,31 +131,48 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
         authUser = (User) getArguments().getSerializable("USER");
         tripDetails = (TripDetails) getArguments().getSerializable("TRIPDETAILS");
-
-        if(tripDetails.getPassengers() == null){
-            Log.d("tripDetails", "passengers array is null");
-
-        }
-        notifyPassengers();
-
-       // updatePoints();
-
         bStart = (Button) v.findViewById(R.id.bStart);
 
-        bStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(isConnected) {
-                    bStart.setAlpha(.5f);
-                    bStart.setEnabled(false);
-                    bStart.setText("In Progress");
-                    requestLocationUpdate();
-                }else{
-                    Toast.makeText(getActivity(),"Not Connected Yet.",Toast.LENGTH_LONG).show();
-                }
+        if (authUser.getEmail().equals(tripDetails.getPassengers().get(0).getEmail())) {
+            notifyPassengers();
+            bStart.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(isConnected) {
+                        bStart.setAlpha(.5f);
+                        bStart.setEnabled(false);
+                        bStart.setText("In Progress");
+                        requestLocationUpdate();
+                    }else{
+                        Toast.makeText(getActivity(),"Not Connected Yet.",Toast.LENGTH_LONG).show();
+                    }
 
-            }
-        });
+                }
+            });
+
+        }
+        else{
+
+            bStart.setAlpha(.5f);
+            bStart.setEnabled(false);
+            bStart.setText("In Progress");
+            //requestLocationUpdate();
+        }
+
+//        bStart.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if(isConnected) {
+//                    bStart.setAlpha(.5f);
+//                    bStart.setEnabled(false);
+//                    bStart.setText("In Progress");
+//                    requestLocationUpdate();
+//                }else{
+//                    Toast.makeText(getActivity(),"Not Connected Yet.",Toast.LENGTH_LONG).show();
+//                }
+//
+//            }
+//        });
 
 
         return v;
@@ -181,7 +198,7 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
                     for(int i = 0; i < tripDetails.getPassengers().size(); i++){
                         if(user.getEmail().equals(tripDetails.getPassengers().get(i).getEmail()) && !user.getEmail().equals(authUser.getEmail())){
-                            users_ref.child(user.getKey()).child("trip_in_progress").push().setValue(tripDetails);
+                            users_ref.child(user.getKey()).child("trip_in_progress").setValue(tripDetails);
                         }
                     }
                 }
