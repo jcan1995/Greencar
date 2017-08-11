@@ -39,6 +39,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -69,6 +70,8 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
     private boolean isConnected;
     private ProximityIntentReceiver proximityIntentReceiver;
     private final static String PROX_ALERT_INTENT = "com.action.proxalert";
+    private DatabaseReference progress_ref;
+    private ValueEventListener valueEventListener;
 
     public interface Callback {
         public void showSummary(TripDetails tripDetails, User user);
@@ -142,8 +145,12 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
                 for(DataSnapshot messsageSnapshot : dataSnapshot.getChildren()){
 
                     User user = messsageSnapshot.getValue(User.class);
-                    users_ref.child(user.getKey()).child("trip_in_progress").setValue(tripDetails);
+                    for(int i = 0; i < tripDetails.getPassengers().size();i++) {
+                       if(tripDetails.getPassengers().get(i).getEmail().equals(user.getEmail())){
+                           users_ref.child(tripDetails.getPassengers().get(i).getKey()).child("trip_in_progress").child("inProgress").setValue(true);
 
+                       }
+                    }
                 }
             }
 
@@ -232,12 +239,12 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
         //If the current user is not the host. (A passenger)
         else if(!tripDetails.getHost().equals(authUser.getEmail())){
             if(!tripDetails.isInProgress()) {
+                setListener();
                 if (isConnected) {
-                   // tripDetails.setInProgress(true);//Update db when stop or pause lifecycle methods are called
                     bStart.setAlpha(.5f);
                     bStart.setEnabled(false);
                     bStart.setText("Please wait...");
-                    //requestLocationUpdate();
+
                 } else {
                     bStart.setAlpha(.5f);
                     bStart.setEnabled(false);
@@ -245,14 +252,106 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
                 }
             }else if(tripDetails.isInProgress()){
               //  tripDetails.setInProgress(true);//Update db when stop or pause lifecycle methods are called
+
                 bStart.setAlpha(.5f);
                 bStart.setEnabled(false);
                 bStart.setText("In Progress");
-             //   requestLocationUpdate();
+
+                if(!tripDetails.getHost().equals(authUser.getEmail())){
+                    setPassengerPointListeners();
+                }
+                    //requestLocationUpdate();
+
             }
         }
 
         return v;
+    }
+
+    private void setListener() {
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        progress_ref = database.getReference("users").child(authUser.getKey()).child("trip_in_progress").child("inProgress");
+        valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                if(dataSnapshot.getValue(boolean.class)){
+                    bStart.setAlpha(.5f);
+                    bStart.setEnabled(false);
+                    bStart.setText("In Progress");
+                    progress_ref.removeEventListener(valueEventListener);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        progress_ref.addValueEventListener(valueEventListener);
+    }
+
+    private void setPassengerPointListeners() {
+        Log.d("listenersset","added listener for passenger");
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+
+        final DatabaseReference users_ref = database.getReference("users/" + authUser.getKey() + "trips");
+        users_ref.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                TripDetails tripCompleted = dataSnapshot.getValue(TripDetails.class);
+
+                if(tripCompleted != null){
+                    callback.showSummary(tripCompleted,authUser);
+
+                    Log.d("listenersset","tripcompleted is not null");
+                }
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+//        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+//        final DatabaseReference users_ref = database.getReference("users/" + authUser.getKey() + "/points");
+//        //Should set off once their points are updated.
+//        users_ref.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//                Log.d("setListeneres", "setPassengerPointListeners called");
+//               // showSummary();
+//
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
     }
 
     private void sendInvitations() {
@@ -274,18 +373,26 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
                     User user = messsageSnapshot.getValue(User.class);
                     tripDetails.setInvitationSent(true);
 
-                          if(tripDetails.getHost().equals(user.getEmail())){
+                    if(tripDetails.getHost().equals(user.getEmail())){
 
-                              TripDetails tripDetailsForHost = tripDetails;
-                              tripDetailsForHost.setInvitationReceived(true);
+//                        TripDetails tripDetailsForHost = tripDetails;
+//                        tripDetailsForHost.setInvitationReceived(true);
+                        tripDetails.setInvitationReceived(true);
+                        users_ref.child(user.getKey()).child("trip_in_progress").setValue(tripDetails);
 
-                              users_ref.child(user.getKey()).child("trip_in_progress").setValue(tripDetailsForHost);
 
+                    }
 
-                          }else {
-                              tripDetails.setInvitationReceived(false);
-                              users_ref.child(user.getKey()).child("trip_in_progress").setValue(tripDetails);
-                          }
+                    for(int i = 0 ; i< tripDetails.getPassengers().size();i++){
+                       if(tripDetails.getHost().equals(user.getEmail())){
+                           //Dont do anything
+
+                        }else if(tripDetails.getPassengers().get(i).getEmail().equals(user.getEmail())){
+                           tripDetails.setInvitationReceived(false);
+                           users_ref.child(user.getKey()).child("trip_in_progress").setValue(tripDetails);
+                       }
+
+                    }
 
                 }
             }
@@ -362,9 +469,10 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
                 Log.d("TripDetails","Entering Proximity");
                 locationManager.removeProximityAlert(proximityIntent);
                 getActivity().unregisterReceiver(proximityIntentReceiver);
-                deleteInProgressNode();
                 updatePoints();
                 showSummary();
+                deleteInProgressNode();
+
                 addNewTrip(tripDetails);
 
             }else{
@@ -377,6 +485,45 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
     //Will delete "trip_in_progress" POJO from Firebase.
     private void deleteInProgressNode() {
+
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference users_ref = database.getReference("users/");
+
+        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for(DataSnapshot messsageSnapshot : dataSnapshot.getChildren()){
+
+                    User user = messsageSnapshot.getValue(User.class);
+                    for(int i = 0; i < tripDetails.getPassengers().size();i++){
+                        if(user.getEmail().equals(tripDetails.getPassengers().get(i).getEmail())){
+                            users_ref.child(tripDetails.getPassengers().get(i).getKey()).child("trip_in_progress").removeValue(new DatabaseReference.CompletionListener() {
+                                @Override
+                                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                    Log.d("deletionTest","onComplete: deleteTripInProgress");
+
+                                }
+                            });
+                        }
+                    }
+//                    users_ref.child(user.getKey()).child("trip_in_progress").removeValue(new DatabaseReference.CompletionListener() {
+//                        @Override
+//                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+//                            Log.d("deletionTest","onComplete: deleteTripInProgress");
+//
+//                        }
+//                    });
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
 
 
 
@@ -393,18 +540,41 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
     private void updatePoints() {
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
 
         for(int i = 0; i < tripDetails.getPassengers().size();i++){
 
-            final DatabaseReference users_ref = database.getReference("users/" + tripDetails.getPassengers().get(i).getKey() + "/points");
+           // final DatabaseReference users_ref = database.getReference("users/" + tripDetails.getPassengers().get(i).getKey() + "/points");
+            final DatabaseReference users_ref = database.getReference("users/");
+
             users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    double points = dataSnapshot.getValue(double.class);
-                    points += tripDetails.getPoints();
-                    users_ref.setValue(points);
-                    Log.d("Points: ","" + points);
+
+                    for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
+
+                       User user = messageSnapshot.getValue(User.class);
+                       for(int i = 0; i < tripDetails.getPassengers().size();i++){
+                           if(user.getEmail().equals(tripDetails.getPassengers().get(i).getEmail())){
+                             //  double points = dataSnapshot.getValue(double.class);
+                             //  points += tripDetails.getPoints();
+
+                               double points = user.getPoints() + tripDetails.getPoints();
+                               users_ref.child(tripDetails.getPassengers().get(i).getKey()).child("/points").setValue(points);
+                               //users_ref.setValue(points);
+                           }
+
+
+
+                       }
+
+
+                   }
+
+//                    double points = dataSnapshot.getValue(double.class);
+//                    points += tripDetails.getPoints();
+//                    users_ref.setValue(points);
+                   // Log.d("Points: ","" + points);
                 }
 
                 @Override
@@ -433,7 +603,7 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
                     for(int i = 0; i < tripDetail.getPassengers().size();i++){
 
-                        if(user.getUserName().equals(tripDetail.getPassengers().get(i).getUserName())){
+                        if(user.getEmail().equals(tripDetail.getPassengers().get(i).getEmail())){
                             users_ref.child(messageSnapshot.getKey()).child("trips").push().setValue(tripDetail);
                         }
                     }

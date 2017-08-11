@@ -60,8 +60,8 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
     private ProgressDialog dialog;
     private TripDetails tripInProgress;
-
-
+    private ValueEventListener valueEventListener;
+    private DatabaseReference users_ref;
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -295,10 +295,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     @Override
     public void cancelTrip() {
       //  isOnConfirmationFragment = false;
-        tripInProgress = null;
-        tripDetails = null;
         deleteTripInProgress();
-
 
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         tripMapFragment.cancelTrip(user);
@@ -307,7 +304,8 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     private void deleteTripInProgress() {
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference users_ref = database.getReference("users");
+        final DatabaseReference users_ref = database.getReference("users/");
+
         users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -315,13 +313,20 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                 for(DataSnapshot messsageSnapshot : dataSnapshot.getChildren()){
 
                     User user = messsageSnapshot.getValue(User.class);
-                    users_ref.child(user.getKey()).child("trip_in_progress").removeValue(new DatabaseReference.CompletionListener() {
-                        @Override
-                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                            Log.d("deletionTest","onComplete: deleteTripInProgress");
+                    for(int i = 0; i < tripInProgress.getPassengers().size();i++){
+                        if(user.getEmail().equals(tripInProgress.getPassengers().get(i).getEmail())){
+                            users_ref.child(tripInProgress.getPassengers().get(i).getKey()).child("trip_in_progress").removeValue(new DatabaseReference.CompletionListener() {
+                                @Override
+                                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                    Log.d("deletionTest","onComplete: deleteTripInProgress");
+                                    tripInProgress = null;
+                                    tripDetails = null;
 
+                                }
+                            });
                         }
-                    });
+                    }
+
 
                 }
             }
@@ -331,15 +336,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
             }
         });
 
-//        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-//        final DatabaseReference users_ref = database.getReference("users").child(user.getKey()).child("trip_in_progress");
-//        users_ref.removeValue(new DatabaseReference.CompletionListener() {
-//            @Override
-//            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-//                Log.d("deletionTest","onComplete: deleteTripInProgress");
-//
-//            }
-//        });
+
 
 
     }
@@ -358,6 +355,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                 tripInProgress = dataSnapshot.getValue(TripDetails.class);
 
                 if(tripInProgress != null){
+//                    users_ref.removeEventListener(valueEventListener);
 
                     if(tripInProgress.getHost().equals(user.getEmail())){
 
@@ -394,12 +392,12 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
                 else{
                     //No trip in progress
+                    setListenerForInvitation();
                     TripMapFragment tripMapFragment = TripMapFragment.newInstance(tripInProgress, user);
                     getSupportFragmentManager()
                             .beginTransaction()
                             .replace(R.id.fragment_container, tripMapFragment)
                             .commit();
-                    Log.d("transactions","tripmapfrag attached from else");
 
                 }
 
@@ -413,7 +411,36 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
     }
 
+    private void setListenerForInvitation() {
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        users_ref = database.getReference("users").child(user.getKey()).child("trip_in_progress");
+
+        valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                tripInProgress = dataSnapshot.getValue(TripDetails.class);
+                if(tripInProgress != null && !tripInProgress.getHost().equals(user.getEmail())){
+
+                    users_ref.removeEventListener(valueEventListener);
+                    toInvitationDialogFragment();
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        users_ref.addValueEventListener(valueEventListener);
+
+    }
+
+
     private void toInvitationDialogFragment() {
+
         InvitationDialogFragment invitationDialogFragment = InvitationDialogFragment.newInstance(tripInProgress,user);
         invitationDialogFragment.show(this.getFragmentManager(),"TRIP_INVITATION");
     }
