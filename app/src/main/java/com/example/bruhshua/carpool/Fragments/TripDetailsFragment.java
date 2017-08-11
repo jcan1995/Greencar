@@ -47,6 +47,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
+
 /**
  * Created by bruhshua on 7/7/17.
  */
@@ -70,7 +72,6 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
     public interface Callback {
         public void showSummary(TripDetails tripDetails, User user);
-      //  void updateMap(CameraUpdate cu);
     }
 
     @Override
@@ -119,42 +120,46 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
     public void onResume() {
         super.onResume();
         Log.d("lifecycleCheck", "TripDetailsFragment: onResume called");
-     //   callback.updateMap(updateMapForPassengers(tripDetails,authUser));
 
     }
-
-//    public CameraUpdate updateMapForPassengers(TripDetails tripDetails, User user){
-//
-//        LatLng mDestinationLatLng = new LatLng(tripDetails.getmDestinationLat(),tripDetails.getmDestinationLng());
-//        LatLng mCurrentLatLng = new LatLng(tripDetails.getmCurrentLat(),tripDetails.getmCurrentLng());
-////
-////        Log.d("updateMapForPassengers","Destination LatLng: " + mDestinationLatLng.toString());
-////        Log.d("updateMapForPassengers","Current LatLng: " + mCurrentLatLng.toString());
-////
-////        MarkerOptions destinationMarker = new MarkerOptions();
-////        destinationMarker.position(mDestinationLatLng);
-//
-//        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-//        builder.include(mCurrentLatLng);
-//        builder.include(mDestinationLatLng);
-//
-//        LatLngBounds bounds = builder.build();
-//        //CameraUpdateFactory.newLatLngBounds(bounds, 32);//32
-//
-//        return CameraUpdateFactory.newLatLngBounds(bounds, 32);
-//
-//    }
 
     @Override
     public void onStop() {
         super.onStop();
+       // updateTripProgress();
         Log.d("lifecycleCheck", "TripDetailsFragment: onStop called");
+
+    }
+
+    private void updateTripProgress() {
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference users_ref = database.getReference("users");
+        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for(DataSnapshot messsageSnapshot : dataSnapshot.getChildren()){
+
+                    User user = messsageSnapshot.getValue(User.class);
+                    users_ref.child(user.getKey()).child("trip_in_progress").setValue(tripDetails);
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
 
     }
 
     @Override
     public void onPause() {
         super.onPause();
+       // updateTripProgress();
         Log.d("lifecycleCheck", "TripDetailsFragment: onPause called");
 
     }
@@ -193,55 +198,64 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
         tripDetails = (TripDetails) getArguments().getSerializable("TRIPDETAILS");
         bStart = (Button) v.findViewById(R.id.bStart);
 
-        if (authUser.getEmail().equals(tripDetails.getPassengers().get(0).getEmail())) {
-            notifyPassengers();
-            bStart.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(isConnected) {
-                        bStart.setAlpha(.5f);
-                        bStart.setEnabled(false);
-                        bStart.setText("In Progress");
-                        requestLocationUpdate();
-                    }else{
-                        Toast.makeText(getActivity(),"Not Connected Yet.",Toast.LENGTH_LONG).show();
+        if(!tripDetails.isInvitationSent() && tripDetails.getHost().equals(authUser.getEmail())){
+            sendInvitations();
+        }
+
+       // If the current user is the host
+        if (tripDetails.getHost().equals(authUser.getEmail())) {
+            if(!tripDetails.isInProgress()) {
+                bStart.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (isConnected) {
+                            tripDetails.setInProgress(true);//Update db when stop or pause lifecycle methods are called
+                            bStart.setAlpha(.5f);
+                            bStart.setEnabled(false);
+                            bStart.setText("In Progress");
+                            updateTripProgress();
+                            requestLocationUpdate();
+                        } else {
+                            bStart.setAlpha(.5f);
+                            bStart.setEnabled(false);
+                            bStart.setText("In Progress");
+                        }
+
                     }
-
+                });
+            } else if(tripDetails.isInProgress()) {
+                bStart.setAlpha(.5f);
+                bStart.setEnabled(false);
+                bStart.setText("In Progress");
+            }
+        }
+        //If the current user is not the host. (A passenger)
+        else if(!tripDetails.getHost().equals(authUser.getEmail())){
+            if(!tripDetails.isInProgress()) {
+                if (isConnected) {
+                   // tripDetails.setInProgress(true);//Update db when stop or pause lifecycle methods are called
+                    bStart.setAlpha(.5f);
+                    bStart.setEnabled(false);
+                    bStart.setText("Please wait...");
+                    //requestLocationUpdate();
+                } else {
+                    bStart.setAlpha(.5f);
+                    bStart.setEnabled(false);
+                    bStart.setText("Please wait...");
                 }
-            });
-
+            }else if(tripDetails.isInProgress()){
+              //  tripDetails.setInProgress(true);//Update db when stop or pause lifecycle methods are called
+                bStart.setAlpha(.5f);
+                bStart.setEnabled(false);
+                bStart.setText("In Progress");
+             //   requestLocationUpdate();
+            }
         }
-        else{
-
-            bStart.setAlpha(.5f);
-            bStart.setEnabled(false);
-            bStart.setText("In Progress");
-            //requestLocationUpdate();
-        }
-
-//        bStart.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if(isConnected) {
-//                    bStart.setAlpha(.5f);
-//                    bStart.setEnabled(false);
-//                    bStart.setText("In Progress");
-//                    requestLocationUpdate();
-//                }else{
-//                    Toast.makeText(getActivity(),"Not Connected Yet.",Toast.LENGTH_LONG).show();
-//                }
-//
-//            }
-//        });
-
 
         return v;
     }
 
-  //  Set listener on "invited_trips" in json.
-
-
-    private void notifyPassengers() {
+    private void sendInvitations() {
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference users_ref = database.getReference("users");
@@ -249,27 +263,37 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
+                for(int i = 0; i< tripDetails.getPassengers().size();i++){
+                    if(tripDetails.getHost().equals(tripDetails.getPassengers().get(i).getEmail())){
+                        tripDetails.getPassengers().get(i).setAckCurrentTrip(true);
+                    }
+                }
+
                 for(DataSnapshot messsageSnapshot : dataSnapshot.getChildren()){
 
                     User user = messsageSnapshot.getValue(User.class);
+                    tripDetails.setInvitationSent(true);
 
-                    for(int i = 0; i < tripDetails.getPassengers().size(); i++){
-                        if(user.getEmail().equals(tripDetails.getPassengers().get(i).getEmail()) && !user.getEmail().equals(authUser.getEmail())){
-                            users_ref.child(user.getKey()).child("trip_in_progress").setValue(tripDetails);
-                        }
-                    }
+                          if(tripDetails.getHost().equals(user.getEmail())){
+
+                              TripDetails tripDetailsForHost = tripDetails;
+                              tripDetailsForHost.setInvitationReceived(true);
+
+                              users_ref.child(user.getKey()).child("trip_in_progress").setValue(tripDetailsForHost);
+
+
+                          }else {
+                              tripDetails.setInvitationReceived(false);
+                              users_ref.child(user.getKey()).child("trip_in_progress").setValue(tripDetails);
+                          }
+
                 }
-                Log.d("TripDetails","inOndataChange");
-
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
         });
-
-
     }
 
 

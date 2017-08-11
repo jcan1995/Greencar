@@ -61,7 +61,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     private ProgressDialog dialog;
     private TripDetails tripInProgress;
 
-  //  private boolean isOnConfirmationFragment = false;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -128,13 +127,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
         user = (User) getIntent().getSerializableExtra("USER");
 
-        setReceiveNotification();
-
-        TripMapFragment tripMapFragment = TripMapFragment.newInstance(null,user);
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, tripMapFragment)
-                .commit();
+        getCurrentTripIfAvailable();
 
         nvDrawer = (NavigationView) findViewById(R.id.navigationView);
         nvDrawer.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -154,12 +147,11 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
                     case R.id.plan_trip:
 
-                            TripMapFragment tripMapFragment = TripMapFragment.newInstance(tripDetails, user);
-                            getSupportFragmentManager()
-                                    .beginTransaction()
-                                    .replace(R.id.fragment_container, tripMapFragment)
-                                    .commit();
-
+                        TripMapFragment tripMapFragment = TripMapFragment.newInstance(tripInProgress, user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, tripMapFragment)
+                                .commit();
 
                         break;
 
@@ -215,7 +207,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                 item.setCheckable(true);
                 setTitle(item.getTitle());
                 drawerLayout.closeDrawers();
-//                setReceiveNotification();
 
                 return true;
 
@@ -227,8 +218,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//        setReceiveNotification();
-
     }
 
     private void logout() {
@@ -262,10 +251,10 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
     @Override
     public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user) {
+        Log.d("mydebugger","MainActivity updateMap called" );
 
-        //isOnConfirmationFragment = true;
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        tripMapFragment.updateMap(mapUpdatePOJO, tripDetails, user);
+        tripMapFragment.updateMapForPassengers(tripDetails, user);
 
     }
 
@@ -274,11 +263,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         tripMapFragment.showSummary(tripDetails, user);
     }
-
-//    @Override
-//    public void updateMap(CameraUpdate cu) {
-//
-//    }
 
 
     @Override
@@ -334,39 +318,65 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
     }
 
-    //Checks "trip_in_progress" field in JSON to see if the user is currently on a trip. There will always only be 1 trip in that field.
-    private void setReceiveNotification() {
+
+    private void getCurrentTripIfAvailable(){
+        Log.d("debugger","getCurrentTripIfAvailable");
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference users_ref = database.getReference("users").child(user.getKey()).child("trip_in_progress");
 
-        users_ref.addValueEventListener(new ValueEventListener() {
+        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                if(tripDetails == null) {
-                    tripDetails = dataSnapshot.getValue(TripDetails.class);
+                tripInProgress = dataSnapshot.getValue(TripDetails.class);
+
+                if(tripInProgress != null){
+
+                    if(tripInProgress.getHost().equals(user.getEmail())){
+
+                        //Current user is hosting the trip
+                        TripMapFragment tripMapFragment = TripMapFragment.newInstance(tripInProgress, user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, tripMapFragment)
+                                .commit();
+                        Log.d("transactions","tripmapfrag attached");
+
+                    }else if(!tripInProgress.getHost().equals(user.getEmail()) && !tripInProgress.isInvitationReceived()){
+
+                        //Current user is a passenger of the trip and hasn't received an invitation
+                        TripMapFragment tripMapFragment = TripMapFragment.newInstance(null, user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, tripMapFragment)
+                                .commit();
+
+                        toInvitationDialogFragment();
+
+                    }else if(!tripInProgress.getHost().equals(user.getEmail()) && tripInProgress.isInvitationReceived()){
+                        //Current user is a passenger of the trip and has already received an invitation
+                        TripMapFragment tripMapFragment = TripMapFragment.newInstance(tripInProgress, user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, tripMapFragment)
+                                .commit();
+                    }
+
+
                 }
-                if(tripDetails != null && !tripDetails.isAckByPassenger()){
 
-                    //tripDetail.setAckByPassenger(true);
-                   // updateTripDetail(tripDetail);
-                    toInvitationDialogFragment();
-
-                    //Means that another passenger received the tripdetail. Show dialog fragment to accept or decline
-                }else if(tripDetails != null && tripDetails.isAckByPassenger()){
-
-                    tripInProgress = tripDetails;
-
-                    TripMapFragment tripMapFragment = TripMapFragment.newInstance(tripDetails,user);
+                else{
+                    //No trip in progress
+                    TripMapFragment tripMapFragment = TripMapFragment.newInstance(tripInProgress, user);
                     getSupportFragmentManager()
                             .beginTransaction()
                             .replace(R.id.fragment_container, tripMapFragment)
                             .commit();
+                    Log.d("transactions","tripmapfrag attached from else");
 
-
-                    //Automatically take user to TripDetailFragment with the tripdetails.
                 }
+
             }
 
             @Override
@@ -376,9 +386,9 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         });
 
     }
-
+    
     private void toInvitationDialogFragment() {
-        InvitationDialogFragment invitationDialogFragment = InvitationDialogFragment.newInstance(tripDetails,user);
+        InvitationDialogFragment invitationDialogFragment = InvitationDialogFragment.newInstance(tripInProgress,user);
         invitationDialogFragment.show(this.getFragmentManager(),"TRIP_INVITATION");
     }
 

@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -63,10 +64,20 @@ public class SplashScreen extends Activity {
                                 User authUser = message.getValue(User.class);
 
                                 if(firebaseAuth.getCurrentUser().getEmail().equals(authUser.getEmail())){
+                                    TripDetails tripInProgress = dataSnapshot.child(authUser.getKey()).child("trip_in_progress").getValue(TripDetails.class);
+                                    if(tripInProgress == null){
+                                        Log.d("SplashScreen","tripinprogress is null");
 
+                                    }else{
+                                        Log.d("SplashScreen","tripinprogress is not null");
+                                        Log.d("SplashScreen","destination:" + tripInProgress.getDestinationAddress());
+
+                                    }
+                                    // users_ref.child(authUser.getKey()).child("trip_in_progress").
                                     finish();
                                     Intent i = new Intent(getApplicationContext(), MainActivity.class);
                                     i.putExtra("USER",authUser);
+                                   // i.putExtra("TRIPINPROGRESS",tripInProgress);
                                     startActivity(i);
 
                                 }
@@ -94,9 +105,9 @@ public class SplashScreen extends Activity {
         },SPLASH_TIME_OUT);
         Log.d("SplashScreen","after timeout");
 
-        finish();
-        Intent i = new Intent(getApplicationContext(), LoginActivity.class);
-        startActivity(i);
-        Log.d("SplashScreen","after timeout");
+//        finish();
+//        Intent i = new Intent(getApplicationContext(), LoginActivity.class);
+//        startActivity(i);
+//        Log.d("SplashScreen","after timeout");
     }
 }

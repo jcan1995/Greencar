@@ -161,7 +161,7 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
         Log.d("lifecycleCheck", "PlanTripFragment: onCreate called");
 
         this.authUser = (User) getArguments().getSerializable("USER");
-        this.authUser.setHost(true);
+      //  this.authUser.setHost(true);
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
                     .addConnectionCallbacks(this)
@@ -197,6 +197,7 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
         if (mCurrentLatLng != null && mDestinationLatLng != null) {
 
             MapUpdatePOJO mapUpdatePOJO = new MapUpdatePOJO(mPolyOptions, mCurrentLatLng, mDestinationLatLng);
+            tripDetail.setHost(authUser.getEmail());
 
             if (callback != null) {
                 callback.updateMap(mapUpdatePOJO, tripDetail, authUser);
@@ -533,6 +534,7 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
                 int numPeople = passengers.size(); //Passengers should also include the driver.
                 float points = miles;
                 tripDetail = new TripDetails(passengers,numPeople,miles,points,currentAddress, mCurrentLatLng.latitude,mCurrentLatLng.longitude,destinationAddress,mDestinationLatLng.latitude,mDestinationLatLng.longitude);
+                tripDetail.setmPolyOptions(mPolyOptions);
                 updateUI();
 
                 dialog.dismiss();

@@ -1,5 +1,7 @@
 package com.example.bruhshua.carpool.Model;
 
+import com.google.android.gms.maps.model.PolylineOptions;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -14,6 +16,7 @@ public class TripDetails implements Serializable {
     private double points;
     private String currentAddress;
     private String destinationAddress;
+    private String host;//By user's emails
 
     private double mCurrentLat;
     private double mCurrentLng;
@@ -22,7 +25,11 @@ public class TripDetails implements Serializable {
     private double mDestinationLng;
 
     private ArrayList<User> passengers;
-    private boolean isAckByPassenger;
+    private ArrayList<PolylineOptions> mPolyOptions;
+
+    private boolean invitationSent;
+    private boolean invitationReceived;
+    private boolean isInProgress;
 
     public TripDetails(){}
 
@@ -37,15 +44,52 @@ public class TripDetails implements Serializable {
         this.mCurrentLng = currentLng;
         this.mDestinationLat = destinationLat;
         this.mDestinationLng = destinationLng;
+        this.invitationSent = false;
+        this.invitationReceived = false;
+        this.isInProgress = false;
+
 
     }
 
-    public boolean isAckByPassenger() {
-        return isAckByPassenger;
+    public boolean isInProgress() {
+        return isInProgress;
     }
 
-    public void setAckByPassenger(boolean ackByPassenger) {
-        isAckByPassenger = ackByPassenger;
+    public void setInProgress(boolean inProgress) {
+        isInProgress = inProgress;
+    }
+
+    public boolean isInvitationReceived() {
+        return invitationReceived;
+    }
+
+    public void setInvitationReceived(boolean invitationReceived) {
+        this.invitationReceived = invitationReceived;
+    }
+
+    public boolean isInvitationSent() {
+        return invitationSent;
+    }
+
+    public void setInvitationSent(boolean invitationSent) {
+        this.invitationSent = invitationSent;
+    }
+
+    public ArrayList<PolylineOptions> getmPolyOptions() {
+        return mPolyOptions;
+    }
+
+    public void setmPolyOptions(ArrayList<PolylineOptions> mPolyOptions) {
+        this.mPolyOptions = mPolyOptions;
+    }
+
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 
     public ArrayList<User> getPassengers() {

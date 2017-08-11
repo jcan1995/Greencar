@@ -70,76 +70,98 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
         Separate Map Update for passengers who currently will not have PolyLines. To much data to transfer from the host to all his passengers.
         Maybe, in the future, all the passengers can run their own Service request to get their polylines instead
      */
+
     public void updateMapForPassengers(TripDetails tripDetails, User user){
+        Log.d("mydebugger","updateMapForPassengers fired" );
 
         LatLng mDestinationLatLng = new LatLng(tripDetails.getmDestinationLat(),tripDetails.getmDestinationLng());
         LatLng mCurrentLatLng = new LatLng(tripDetails.getmCurrentLat(),tripDetails.getmCurrentLng());
 
-        Log.d("updateMapForPassengers","Destination LatLng: " + mDestinationLatLng.toString());
-        Log.d("updateMapForPassengers","Current LatLng: " + mCurrentLatLng.toString());
-
         MarkerOptions destinationMarker = new MarkerOptions();
         destinationMarker.position(mDestinationLatLng);
-        if(map == null){
-            Log.d("execCheck","map is null");
-
-        }
-
-        map.addMarker(destinationMarker);//keep
+        map.addMarker(destinationMarker);
 
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         builder.include(mCurrentLatLng);
         builder.include(mDestinationLatLng);
 
         LatLngBounds bounds = builder.build();
-        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 32);//32
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 256);
 
-        Log.d("updateMapForPassengers","before moveCamera");
         map.moveCamera(cu);
-        Log.d("updateMapForPassengers","after moveCamera");
+
 
         TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetails, user);
         getActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.plan_trip_fragment_container, tripDetailsFragment)
                 .commit();
-        Log.d("execCheck","end of updateMapForPassengers");
 
 
     }
 
-    public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user) {
-
-        if (mapUpdatePOJO.getmCurrentLatLng() != null && mapUpdatePOJO.getmDestinationLatLng() != null) {
-
-            for (int i = 0; i < mapUpdatePOJO.getmPolyOptions().size(); i++) {
-                map.addPolyline(mapUpdatePOJO.getmPolyOptions().get(i));
-            }
-
-            MarkerOptions destinationMarker = new MarkerOptions();
-            destinationMarker.position(mapUpdatePOJO.getmDestinationLatLng());
-            map.addMarker(destinationMarker);
-
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-            builder.include(mapUpdatePOJO.getmCurrentLatLng());
-            builder.include(mapUpdatePOJO.getmDestinationLatLng());
-
-            LatLngBounds bounds = builder.build();
-            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 32);//32
-            map.moveCamera(cu);
-
-
-            TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetails, user);
-            getActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.plan_trip_fragment_container, tripDetailsFragment)
-                    .commit();
-
-
-        } else {
-        }
-
-    }
+//    public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user) {
+//        Log.d("mydebugger","TripMapFragment: updateMap called" );
+//
+//        LatLng mDestinationLatLng = new LatLng(tripDetails.getmDestinationLat(),tripDetails.getmDestinationLng());
+//        LatLng mCurrentLatLng = new LatLng(tripDetails.getmCurrentLat(),tripDetails.getmCurrentLng());
+//
+//        if(mCurrentLatLng != null && mDestinationLatLng != null){
+////            for (int i = 0; i < tripDetails.getmPolyOptions().size(); i++) {
+////                map.addPolyline(tripDetails.getmPolyOptions().get(i));
+////            }
+//            MarkerOptions destinationMarker = new MarkerOptions();
+//            destinationMarker.position(mDestinationLatLng);
+//            map.addMarker(destinationMarker);
+//
+//            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+//            builder.include(mCurrentLatLng);
+//            builder.include(mDestinationLatLng);
+//
+//            LatLngBounds bounds = builder.build();
+//            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 32);//32
+//            map.moveCamera(cu);
+//
+//            TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetails, user);
+//            getActivity().getSupportFragmentManager()
+//                    .beginTransaction()
+//                    .replace(R.id.plan_trip_fragment_container, tripDetailsFragment)
+//                    .commit();
+//
+//
+//        } else {
+//        }
+//
+////        if (mapUpdatePOJO.getmCurrentLatLng() != null && mapUpdatePOJO.getmDestinationLatLng() != null) {
+////
+////            for (int i = 0; i < mapUpdatePOJO.getmPolyOptions().size(); i++) {
+////                map.addPolyline(mapUpdatePOJO.getmPolyOptions().get(i));
+////            }
+////
+////            MarkerOptions destinationMarker = new MarkerOptions();
+////            destinationMarker.position(mapUpdatePOJO.getmDestinationLatLng());
+////            map.addMarker(destinationMarker);
+////
+////            LatLngBounds.Builder builder = new LatLngBounds.Builder();
+////            builder.include(mapUpdatePOJO.getmCurrentLatLng());
+////            builder.include(mapUpdatePOJO.getmDestinationLatLng());
+////
+////            LatLngBounds bounds = builder.build();
+////            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 32);//32
+////            map.moveCamera(cu);
+////
+////
+////            TripDetailsFragment tripDetailsFragment = TripDetailsFragment.newInstance(tripDetails, user);
+////            getActivity().getSupportFragmentManager()
+////                    .beginTransaction()
+////                    .replace(R.id.plan_trip_fragment_container, tripDetailsFragment)
+////                    .commit();
+////
+////
+////        } else {
+////        }
+//
+//    }
 
     public void showSummary(TripDetails tripDetails, User user) {
 
@@ -245,7 +267,6 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_BACK) {
                     Toast.makeText(getActivity(), "Back pressed", Toast.LENGTH_SHORT).show();
-//                    return true;
                 }
                 return true;
             }
@@ -280,6 +301,7 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
             fm.beginTransaction().show(mSupportMapFragment).commit();
 
         return v;
+
     }
 
     @Override
@@ -287,20 +309,19 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
         Log.d("lifecycleCheck", "TripMapFragment: onMapReady called");
 
         map = googleMap;
-        map.getUiSettings().setScrollGesturesEnabled(false);
-        if(tripInProgress != null){
-            Log.d("lifecycleCheck", "TripMapFragment: onMapReady, tripInProgress != null");
-            updateMapForPassengers(tripInProgress,authUser);
-        }else{
+        //map.getUiSettings().setScrollGesturesEnabled(false);
 
+        if(tripInProgress != null){
+            updateMapForPassengers(tripInProgress,authUser);
         }
-        Log.d("execCheck","end of onMapReady");
+
 
     }
 
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        Log.d("lifecycleCheck", "TripMapFragment: onConnected called");
 
         if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -311,7 +332,7 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
             mCriteria = new Criteria();
             bestProvider = String.valueOf(manager.getBestProvider(mCriteria, true));
             location = manager.getLastKnownLocation(bestProvider);
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+           // map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
 
         } else {
             //Todo: Maybe show dialog that tells users why we need their location.

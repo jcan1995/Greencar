@@ -19,8 +19,10 @@ public class User implements Serializable{
     private HashMap<String,TripDetails> trips;
     private String downloadUrl;
     private String key;
+    private boolean ackCurrentTrip;
     private boolean isValidated;
     private boolean isHost;
+
     private double currentLatitude;
     private double currentLongitude;
 
@@ -34,12 +36,15 @@ public class User implements Serializable{
         this.userName = userName;
         this.localProfilePictureUrl = localProfilePictureUrl;
         this.trips = tripDetails;
+        this.ackCurrentTrip = false;
     }
 
     public User(String email, String displayName, String downloadUrl) {
         this.email = email;
         this.userName = displayName;
         this.downloadUrl = downloadUrl;
+        this.ackCurrentTrip = false;
+
     }
 
     public User(String email, String displayName, String downloadUrl, String phoneNumber, String key, double points) {
@@ -49,11 +54,22 @@ public class User implements Serializable{
         this.number = phoneNumber;
         this.key = key;
         this.points = points;
+        this.ackCurrentTrip = false;
 
     }
     public User(String email, String displayName) {
         this.email = email;
         this.userName = displayName;
+        this.ackCurrentTrip = false;
+
+    }
+
+    public boolean isAckCurrentTrip() {
+        return ackCurrentTrip;
+    }
+
+    public void setAckCurrentTrip(boolean ackCurrentTrip) {
+        this.ackCurrentTrip = ackCurrentTrip;
     }
 
 

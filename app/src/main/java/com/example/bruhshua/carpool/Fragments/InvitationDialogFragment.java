@@ -95,7 +95,7 @@ public class InvitationDialogFragment extends DialogFragment {
             public void onClick(DialogInterface dialog, int which) {
 
                 //Takes user to their trip that's in progress.
-                tripDetails.setAckByPassenger(true);
+                tripDetails.setInvitationReceived(true);
                 updateTripDetail(tripDetails);
                 callback.acceptInvitation(tripDetails);
 
