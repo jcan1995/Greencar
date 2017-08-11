@@ -33,7 +33,7 @@ public class TripDetails implements Serializable {
 
     public TripDetails(){}
 
-    public TripDetails(ArrayList<User> passengers,int numOfPeople, float miles, float points, String currentAddress, double currentLat, double currentLng, String destinationAddress, double destinationLat, double destinationLng) {
+    public TripDetails(ArrayList<User> passengers,int numOfPeople, float miles, double points, String currentAddress, double currentLat, double currentLng, String destinationAddress, double destinationLat, double destinationLng) {
         this.passengers = passengers;
         this.numOfPeople = numOfPeople;
         this.miles = miles;

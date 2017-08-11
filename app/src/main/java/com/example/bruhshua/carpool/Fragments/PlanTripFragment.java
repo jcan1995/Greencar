@@ -484,8 +484,13 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
                     milestrimmed = milesString.replaceAll(" mi","");
 
                 }else if(milesString.contains("ft")){
-                    //todo: convert from ft to miles
-                    milestrimmed = milesString.replaceAll(" ft","");
+                    String feetTrimmed = milesString.replace(" ft","");
+
+                    float feet = Float.parseFloat(feetTrimmed);
+                    float convertedMiles = feet / 5280;
+
+                    milestrimmed = String.valueOf(convertedMiles);
+
 
                 }
 
@@ -493,8 +498,6 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
                     miles = Float.parseFloat(milestrimmed);
 
                 }
-
-
 
                 longInfo(result.toString());
                 JSONObject jsonObj = new JSONObject(result.toString());
@@ -532,7 +535,8 @@ public class PlanTripFragment extends Fragment implements GoogleApiClient.Connec
                 }
 
                 int numPeople = passengers.size(); //Passengers should also include the driver.
-                float points = miles;
+                double points = Math.ceil(miles);
+
                 tripDetail = new TripDetails(passengers,numPeople,miles,points,currentAddress, mCurrentLatLng.latitude,mCurrentLatLng.longitude,destinationAddress,mDestinationLatLng.latitude,mDestinationLatLng.longitude);
                 tripDetail.setmPolyOptions(mPolyOptions);
                 updateUI();

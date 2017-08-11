@@ -209,7 +209,12 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
             sendInvitations();
         }
 
-       // If the current user is the host
+        if(!tripDetails.getHost().equals(authUser.getEmail())){
+            setOnTripAddedForPassengers();
+        }
+
+
+        // If the current user is the host
         if (tripDetails.getHost().equals(authUser.getEmail())) {
             if(!tripDetails.isInProgress()) {
                 bStart.setOnClickListener(new View.OnClickListener() {
@@ -469,10 +474,11 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
                 Log.d("TripDetails","Entering Proximity");
                 locationManager.removeProximityAlert(proximityIntent);
                 getActivity().unregisterReceiver(proximityIntentReceiver);
-                updatePoints();
-                showSummary();
-                deleteInProgressNode();
 
+                updatePoints();
+                showSummary(tripDetails);
+
+                deleteInProgressNode();
                 addNewTrip(tripDetails);
 
             }else{
@@ -481,6 +487,48 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
             }
 
         }
+    }
+
+    private void setOnTripAddedForPassengers() {
+
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference trips_ref = database.getReference("users/" + authUser.getKey() + "/trips");
+
+        trips_ref.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                TripDetails completedTrip = dataSnapshot.getValue(TripDetails.class);
+                if(completedTrip != null){
+                    Log.d("details","Destination: " + completedTrip.getDestinationAddress());
+                    Log.d("details","Source: " + completedTrip.getCurrentAddress());
+                    updatePoints();
+                    showSummary(completedTrip);
+
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
     }
 
     //Will delete "trip_in_progress" POJO from Firebase.
@@ -532,7 +580,7 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
 
     }
 
-    private void showSummary() {
+    private void showSummary(TripDetails tripDetails) {
 
         callback.showSummary(tripDetails,authUser);
 
@@ -541,52 +589,23 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
     private void updatePoints() {
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference points_ref = database.getReference("users/" + authUser.getKey() + "/points");
+        points_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                double points = dataSnapshot.getValue(double.class);
+                points += tripDetails.getPoints();
+                points_ref.setValue(points);
+            }
 
-        for(int i = 0; i < tripDetails.getPassengers().size();i++){
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-           // final DatabaseReference users_ref = database.getReference("users/" + tripDetails.getPassengers().get(i).getKey() + "/points");
-            final DatabaseReference users_ref = database.getReference("users/");
-
-            users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-
-                    for(DataSnapshot messageSnapshot : dataSnapshot.getChildren()){
-
-                       User user = messageSnapshot.getValue(User.class);
-                       for(int i = 0; i < tripDetails.getPassengers().size();i++){
-                           if(user.getEmail().equals(tripDetails.getPassengers().get(i).getEmail())){
-                             //  double points = dataSnapshot.getValue(double.class);
-                             //  points += tripDetails.getPoints();
-
-                               double points = user.getPoints() + tripDetails.getPoints();
-                               users_ref.child(tripDetails.getPassengers().get(i).getKey()).child("/points").setValue(points);
-                               //users_ref.setValue(points);
-                           }
-
-
-
-                       }
-
-
-                   }
-
-//                    double points = dataSnapshot.getValue(double.class);
-//                    points += tripDetails.getPoints();
-//                    users_ref.setValue(points);
-                   // Log.d("Points: ","" + points);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-
-        }
-
+            }
+        });
 
     }
+
     private void addNewTrip(final TripDetails tripDetail) {
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
