@@ -332,8 +332,9 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
             mCriteria = new Criteria();
             bestProvider = String.valueOf(manager.getBestProvider(mCriteria, true));
             location = manager.getLastKnownLocation(bestProvider);
-           // map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
-
+           if(tripInProgress == null) {
+               map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+           }
         } else {
             //Todo: Maybe show dialog that tells users why we need their location.
             ActivityCompat.requestPermissions(getActivity(),

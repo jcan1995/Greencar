@@ -253,6 +253,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user) {
         Log.d("mydebugger","MainActivity updateMap called" );
 
+        tripInProgress = tripDetails;
         TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         tripMapFragment.updateMapForPassengers(tripDetails, user);
 
@@ -306,14 +307,39 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     private void deleteTripInProgress() {
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference users_ref = database.getReference("users").child(user.getKey()).child("trip_in_progress");
-        users_ref.removeValue(new DatabaseReference.CompletionListener() {
+        final DatabaseReference users_ref = database.getReference("users");
+        users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                Log.d("deletionTest","onComplete: deleteTripInProgress");
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for(DataSnapshot messsageSnapshot : dataSnapshot.getChildren()){
+
+                    User user = messsageSnapshot.getValue(User.class);
+                    users_ref.child(user.getKey()).child("trip_in_progress").removeValue(new DatabaseReference.CompletionListener() {
+                        @Override
+                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                            Log.d("deletionTest","onComplete: deleteTripInProgress");
+
+                        }
+                    });
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
             }
         });
+
+//        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+//        final DatabaseReference users_ref = database.getReference("users").child(user.getKey()).child("trip_in_progress");
+//        users_ref.removeValue(new DatabaseReference.CompletionListener() {
+//            @Override
+//            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+//                Log.d("deletionTest","onComplete: deleteTripInProgress");
+//
+//            }
+//        });
 
 
     }
@@ -386,7 +412,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         });
 
     }
-    
+
     private void toInvitationDialogFragment() {
         InvitationDialogFragment invitationDialogFragment = InvitationDialogFragment.newInstance(tripInProgress,user);
         invitationDialogFragment.show(this.getFragmentManager(),"TRIP_INVITATION");
@@ -395,9 +421,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     //Delete POJO from "trip_in_progress"
     @Override
     public void declineInvitation() {
-
-
-
+        deleteTripInProgress();
     }
 
     //Take User to TripDetailsFragment page
