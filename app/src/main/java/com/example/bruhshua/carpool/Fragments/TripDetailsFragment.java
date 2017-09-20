@@ -54,7 +54,7 @@ import java.util.ArrayList;
  * Created by bruhshua on 7/7/17.
  */
 
-public class TripDetailsFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
+public class TripDetailsFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener,CancelTripDialogFragment.Callback {
 
     private User authUser;
     private TripDetails tripDetails;
@@ -73,7 +73,15 @@ public class TripDetailsFragment extends Fragment implements GoogleApiClient.Con
     private DatabaseReference progress_ref;
     private ValueEventListener valueEventListener;
 
+    @Override
+    public void cancelTrip() {
+        if(proximityIntentReceiver != null) {
+            getActivity().unregisterReceiver(proximityIntentReceiver);
+        }
+    }
+
     public interface Callback {
+
         public void showSummary(TripDetails tripDetails, User user);
     }
 

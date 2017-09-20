@@ -20,7 +20,6 @@ import com.example.bruhshua.carpool.Fragments.AboutFragment;
 import com.example.bruhshua.carpool.Fragments.CancelTripDialogFragment;
 import com.example.bruhshua.carpool.Fragments.ContactFragment;
 import com.example.bruhshua.carpool.Fragments.InvitationDialogFragment;
-import com.example.bruhshua.carpool.Fragments.MerchandiseFragment;
 import com.example.bruhshua.carpool.Fragments.MyAccountFragment;
 import com.example.bruhshua.carpool.Fragments.MyTripsFragment;
 import com.example.bruhshua.carpool.Fragments.PlanTripFragment;
@@ -31,7 +30,6 @@ import com.example.bruhshua.carpool.Model.MapUpdatePOJO;
 import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.R;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -51,17 +49,16 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle actionBarDrawerToggle;
     private Toolbar toolBar;
-    private TripDetails tripDetails;
     private NavigationView nvDrawer;
 
-    private User user; //Todo:Get the current user using the application from firebase.
+    private User user;
     private FirebaseUser firebaseUser;
     private FirebaseAuth firebaseAuth;
 
-    private ProgressDialog dialog;
     private TripDetails tripInProgress;
     private ValueEventListener valueEventListener;
     private DatabaseReference users_ref;
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -74,36 +71,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         }
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        Log.d("lifecycleCheck", "MainActivity: onPause called");
-
-    }
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d("lifecycleCheck", "MainActivity: onStart called");
-
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.d("lifecycleCheck", "MainActivity: onRestart called");
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d("lifecycleCheck", "MainActivity: onResume called");
-
-
-    }
 
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
@@ -116,8 +83,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        Log.d("lifecycleCheck", "MainActivity: onCreate called");
-
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         toolBar = (Toolbar) findViewById(R.id.toolBar);
         setSupportActionBar(toolBar);
@@ -127,178 +92,9 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
         user = (User) getIntent().getSerializableExtra("USER");
 
-        getCurrentTripIfAvailable();
+        getTripInProgressIfAvailable();
+        setupNavigationDrawer();
 
-        nvDrawer = (NavigationView) findViewById(R.id.navigationView);
-        nvDrawer.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
-                switch (item.getItemId()) {
-                    case R.id.my_account:
-
-                        //Pass in user data that is queried in MainActivity.
-                        MyAccountFragment myAccountFragment = MyAccountFragment.newInstance(user);
-                        getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fragment_container, myAccountFragment)
-                                .commit();
-                        break;
-
-                    case R.id.plan_trip:
-
-                        TripMapFragment tripMapFragment = TripMapFragment.newInstance(tripInProgress, user);
-                        getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fragment_container, tripMapFragment)
-                                .commit();
-
-                        break;
-
-                    case R.id.my_trips:
-
-                        MyTripsFragment myTripsFragment = MyTripsFragment.newInstance(user);
-                        getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fragment_container, myTripsFragment)
-                                .commit();
-                        break;
-
-                    case R.id.log_out:
-                        logout();
-                        break;
-
-                    case R.id.merch:
-
-                        MerchandiseFragment merchandiseFragment = MerchandiseFragment.newInstance(user);
-                        getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fragment_container, merchandiseFragment)
-                                .commit();
-
-                        break;
-
-                    case R.id.contact:
-                        ContactFragment contactFragment = ContactFragment.newInstance(user);
-                        getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fragment_container, contactFragment)
-                                .commit();
-                        break;
-
-                    case R.id.about:
-                        AboutFragment aboutFragment = AboutFragment.newInstance(user);
-                        getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fragment_container, aboutFragment)
-                                .commit();
-                        break;
-
-                    default:
-
-                        MyAccountFragment fragment1 = MyAccountFragment.newInstance(user);
-                        getSupportFragmentManager()
-                                .beginTransaction()
-                                .replace(R.id.fragment_container, fragment1)
-                                .commit();
-                        break;
-
-                }
-                item.setCheckable(true);
-                setTitle(item.getTitle());
-                drawerLayout.closeDrawers();
-
-                return true;
-
-            }
-        });
-
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
-        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolBar, R.string.open, R.string.close);
-        drawerLayout.addDrawerListener(actionBarDrawerToggle);
-        actionBarDrawerToggle.syncState();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
-
-    private void logout() {
-
-        firebaseAuth.signOut();
-
-        if (firebaseAuth.getCurrentUser() == null) {
-
-            finish();
-            Intent i = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(i);
-            Toast.makeText(getApplicationContext(), "Signed Out Successfully",
-                    Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(getApplicationContext(), "Could not sign out, please try again",
-                    Toast.LENGTH_LONG).show();
-        }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
-            Log.d("MainActivity", "item selected");
-
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-
-    @Override
-    public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user) {
-        Log.d("mydebugger","MainActivity updateMap called" );
-
-        tripInProgress = tripDetails;
-        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        tripMapFragment.updateMapForPassengers(tripDetails, user);
-
-    }
-
-    @Override
-    public void showSummary(TripDetails tripDetails, User user) {
-        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        tripMapFragment.showSummary(tripDetails, user);
-    }
-
-
-    @Override
-    public void Reset(User user) {
-        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        tripMapFragment.Reset(user);
-    }
-
-    @Override
-    public void onBackPressed() {
-//        super.onBackPressed(); <--- is what closes the app
-
-        Log.d("onBackPressed","onBackPressed");
-
-        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        Fragment hostedFragment = tripMapFragment.getFragmentManager().findFragmentById(R.id.plan_trip_fragment_container);
-
-        if(hostedFragment instanceof TripDetailsFragment){
-            Log.d("onBackPressed","instaceof TripDetails");
-            CancelTripDialogFragment cancelTripDialogFragment = CancelTripDialogFragment.newInstance();
-            cancelTripDialogFragment.show(this.getFragmentManager(), "CANCELTRIP");
-        }else{
-            Log.d("onBackPressed","else");
-
-        }
-
-    }
-
-    @Override
-    public void cancelTrip() {
-      //  isOnConfirmationFragment = false;
-        deleteTripInProgress();
-
-        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        tripMapFragment.cancelTrip(user);
     }
 
     private void deleteTripInProgress() {
@@ -320,7 +116,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                                     Log.d("deletionTest","onComplete: deleteTripInProgress");
                                     tripInProgress = null;
-                                    tripDetails = null;
 
                                 }
                             });
@@ -341,9 +136,7 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
     }
 
-
-    private void getCurrentTripIfAvailable(){
-        Log.d("debugger","getCurrentTripIfAvailable");
+    private void getTripInProgressIfAvailable(){
 
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference users_ref = database.getReference("users").child(user.getKey()).child("trip_in_progress");
@@ -355,8 +148,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                 tripInProgress = dataSnapshot.getValue(TripDetails.class);
 
                 if(tripInProgress != null){
-//                    users_ref.removeEventListener(valueEventListener);
-
                     if(tripInProgress.getHost().equals(user.getEmail())){
 
                         //Current user is hosting the trip
@@ -365,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
                                 .beginTransaction()
                                 .replace(R.id.fragment_container, tripMapFragment)
                                 .commit();
-                        Log.d("transactions","tripmapfrag attached");
 
                     }else if(!tripInProgress.getHost().equals(user.getEmail()) && !tripInProgress.isInvitationReceived()){
 
@@ -438,11 +228,187 @@ public class MainActivity extends AppCompatActivity implements PlanTripFragment.
 
     }
 
-
     private void toInvitationDialogFragment() {
 
         InvitationDialogFragment invitationDialogFragment = InvitationDialogFragment.newInstance(tripInProgress,user);
         invitationDialogFragment.show(this.getFragmentManager(),"TRIP_INVITATION");
+    }
+
+    private void setupNavigationDrawer() {
+
+        nvDrawer = (NavigationView) findViewById(R.id.navigationView);
+        nvDrawer.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
+                switch (item.getItemId()) {
+                    case R.id.my_account:
+
+                        //Pass in user data that is queried in MainActivity.
+                        MyAccountFragment myAccountFragment = MyAccountFragment.newInstance(user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, myAccountFragment)
+                                .commit();
+                        break;
+
+                    case R.id.plan_trip:
+
+                        TripMapFragment tripMapFragment = TripMapFragment.newInstance(tripInProgress, user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, tripMapFragment)
+                                .commit();
+
+                        break;
+
+                    case R.id.my_trips:
+
+                        MyTripsFragment myTripsFragment = MyTripsFragment.newInstance(user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, myTripsFragment)
+                                .commit();
+                        break;
+
+                    case R.id.log_out:
+                        logout();
+                        break;
+
+//                    case R.id.merch:
+//
+//                        MerchandiseFragment merchandiseFragment = MerchandiseFragment.newInstance(user);
+//                        getSupportFragmentManager()
+//                                .beginTransaction()
+//                                .replace(R.id.fragment_container, merchandiseFragment)
+//                                .commit();
+//
+//                        break;
+
+                    case R.id.contact:
+                        ContactFragment contactFragment = ContactFragment.newInstance(user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, contactFragment)
+                                .commit();
+                        break;
+
+                    case R.id.about:
+                        AboutFragment aboutFragment = AboutFragment.newInstance(user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, aboutFragment)
+                                .commit();
+                        break;
+
+                    default:
+
+                        MyAccountFragment fragment1 = MyAccountFragment.newInstance(user);
+                        getSupportFragmentManager()
+                                .beginTransaction()
+                                .replace(R.id.fragment_container, fragment1)
+                                .commit();
+                        break;
+
+                }
+                item.setCheckable(true);
+                setTitle(item.getTitle());
+                drawerLayout.closeDrawers();
+
+                return true;
+
+            }
+        });
+
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolBar, R.string.open, R.string.close);
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+
+        actionBarDrawerToggle.syncState();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+
+    }
+
+    private void logout() {
+
+        firebaseAuth.signOut();
+
+        if (firebaseAuth.getCurrentUser() == null) {
+
+            finish();
+            Intent i = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(i);
+            Toast.makeText(getApplicationContext(), "Signed Out Successfully",
+                    Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getApplicationContext(), "Could not sign out, please try again",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    @Override
+    public void updateMap(MapUpdatePOJO mapUpdatePOJO, TripDetails tripDetails, User user) {
+        Log.d("mydebugger","MainActivity updateMap called" );
+
+        tripInProgress = tripDetails;
+        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        tripMapFragment.updateMapForPassengers(tripDetails, user);
+
+    }
+
+    @Override
+    public void showSummary(TripDetails tripDetails, User user) {
+        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        tripMapFragment.showSummary(tripDetails, user);
+    }
+
+
+    @Override
+    public void Reset(User user) {
+        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        tripMapFragment.Reset(user);
+    }
+
+    @Override
+    public void onBackPressed() {
+//        super.onBackPressed(); <--- is what closes the app
+
+        Log.d("onBackPressed","onBackPressed");
+
+        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        Fragment hostedFragment = tripMapFragment.getFragmentManager().findFragmentById(R.id.plan_trip_fragment_container);
+
+        if(hostedFragment instanceof TripDetailsFragment){
+            Log.d("onBackPressed","instaceof TripDetails");
+            CancelTripDialogFragment cancelTripDialogFragment = CancelTripDialogFragment.newInstance();
+            cancelTripDialogFragment.show(this.getFragmentManager(), "CANCELTRIP");
+        }else{
+            Log.d("onBackPressed","else");
+
+        }
+
+    }
+
+    @Override
+    public void cancelTrip() {
+
+        deleteTripInProgress();
+
+        TripMapFragment tripMapFragment = (TripMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        tripMapFragment.cancelTrip(user);
     }
 
     //Delete POJO from "trip_in_progress"

@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:layout_margin="16dp"
-    android:gravity="center"
+    android:gravity="left"
+    android:layout_margin="8dp"
+
     >
     <de.hdodenhof.circleimageview.CircleImageView
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/ivUserImage"
         android:layout_width="@android:dimen/app_icon_size"
         android:layout_height="@android:dimen/app_icon_size"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
+        android:layout_margin="16dp"
+        android:gravity="left"
         app:border_color="@color/white"
         app:border_width="3dp" />
 
@@ -20,5 +21,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/tvUserName"
+        android:gravity="right"
+        android:layout_gravity="center_vertical"
+        android:text="text"
+
         />
 </LinearLayout>

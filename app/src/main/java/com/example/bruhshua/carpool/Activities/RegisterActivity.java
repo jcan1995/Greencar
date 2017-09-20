@@ -90,7 +90,13 @@ public class RegisterActivity extends Activity{
         bRegisterUser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                registerUser();
+
+                if(selectedImage != null && !filename.equals("")) {
+                    registerUser();
+                }else{
+                    Toast.makeText(getApplicationContext(),"Please fill in all fields and select a photo.",Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
         ivProfilePicture = (ImageView) findViewById(R.id.ivAddImage);

@@ -3,7 +3,7 @@
 
     <group>
     <item android:id="@+id/plan_trip"
-        android:title="Plan Trip"
+        android:title="Greencar"
         android:icon="@mipmap/ic_home_black_24dp"/>
 
     <item android:id="@+id/my_trips"
@@ -19,14 +19,9 @@
         android:icon="@mipmap/ic_exit_to_app_black_24dp"/>
 
     </group>
-    <item android:title="Other">
+    <item android:title="Help">
 
         <menu>
-            <item
-                android:id="@+id/merch"
-                android:title="Merchandise"
-                android:icon="@mipmap/ic_credit_card_black_24dp"
-                ></item>
             <item
                 android:id="@+id/contact"
                 android:title="Contact"

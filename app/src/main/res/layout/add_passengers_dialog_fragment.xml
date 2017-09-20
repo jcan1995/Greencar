@@ -25,7 +25,7 @@
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Find Passenger"
+            android:hint="Enter User Name"
             android:id="@+id/etPassenger"
             android:padding="10dp"
             android:textStyle="bold"
@@ -47,7 +47,7 @@
         android:padding="16dp"
         android:textStyle="bold"
         android:gravity="center"
-        android:text="Pool"
+        android:text="Passengers"
         />
     <ListView
         android:layout_width="match_parent"

@@ -19,6 +19,9 @@ import com.example.bruhshua.carpool.Model.User;
  * Created by bruhshua on 5/21/17.
  */
 
+/*
+ Background image credit <a href="http://www.freepik.com/free-vector/the-same-landscape-in-different-seasons-banners_844369.htm">Designed by Freepik</a>
+ */
 
 public class MyAccountFragment extends Fragment {
 
@@ -62,13 +65,14 @@ public class MyAccountFragment extends Fragment {
             Glide.with(getActivity())
                     .load(authUser.getDownloadUrl())
                     .into(ivUserPhoto);
-            Glide.with(getActivity())
-                    .load(authUser.getDownloadUrl())
-                    .into(ivBackGroundImage);
+
+//            Glide.with(getActivity())
+//                    .load(authUser.getDownloadUrl())
+//                    .into(ivBackGroundImage);
             ivBackGroundImage.setAlpha(.5f);
 
             tvUserName.setText(authUser.getUserName());
-            tvPoints.setText(" | " + String.valueOf(authUser.getPoints()));
+            tvPoints.setText(" | " + String.valueOf((int)authUser.getPoints()));
            // tvEmail.setText(authUser.getEmail());
 
         }

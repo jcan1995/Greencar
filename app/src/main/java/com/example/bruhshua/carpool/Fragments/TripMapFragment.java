@@ -38,6 +38,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.security.Provider;
+
 /**
  * Created by bruhshua on 7/24/17.
  */
@@ -50,10 +52,7 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     private GoogleApiClient mGoogleApiClient;
     private SupportMapFragment mSupportMapFragment;
     private User authUser;
-    private LocationManager manager;
     private Location location;
-    private Criteria mCriteria;
-    private String bestProvider;
 
     private TripDetails tripInProgress;
 
@@ -72,7 +71,6 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
      */
 
     public void updateMapForPassengers(TripDetails tripDetails, User user){
-        Log.d("mydebugger","updateMapForPassengers fired" );
 
         LatLng mDestinationLatLng = new LatLng(tripDetails.getmDestinationLat(),tripDetails.getmDestinationLng());
         LatLng mCurrentLatLng = new LatLng(tripDetails.getmCurrentLat(),tripDetails.getmCurrentLng());
@@ -174,11 +172,6 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
 
     }
 
-//    @Override
-//    public void updateMap(CameraUpdate cu) {
-//        map.moveCamera(cu);
-//    }
-
     public void Reset(User user) {
         map.clear();
         PlanTripFragment planTripFragment = PlanTripFragment.newInstance(user);
@@ -203,7 +196,6 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        Log.d("lifecycleCheck", "TripMapFragment: onAttach called");
 
     }
 
@@ -211,37 +203,17 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     public void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
-        Log.d("lifecycleCheck", "TripMapFragment: onStart called");
-
-
     }
 
     @Override
     public void onStop() {
         super.onStop();
         mGoogleApiClient.disconnect();
-        Log.d("lifecycleCheck", "TripMapFragment: onStop called");
-
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.d("lifecycleCheck", "TripMapFragment: onResume called");
-
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.d("lifecycleCheck", "TripMapFragment: onPause called");
-
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d("lifecycleCheck", "TripMapFragment: onCreate called");
 
         this.authUser = (User) getArguments().getSerializable("USER");
         this.tripInProgress = (TripDetails) getArguments().getSerializable("TRIPINPROGRESS");
@@ -260,7 +232,6 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.trip_map_fragment, container, false);
-        Log.d("lifecycleCheck", "TripMapFragment: onCreateView called");
 
         v.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -272,15 +243,9 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
             }
         });
 
-        manager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        mCriteria = new Criteria();
-        bestProvider = String.valueOf(manager.getBestProvider(mCriteria, true));
+//        getCurrentLocation();
+        buildMap();
 
-        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            location = manager.getLastKnownLocation(bestProvider);
-//            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
-
-        }
 
          if(tripInProgress == null) {
            PlanTripFragment planTripFragment = PlanTripFragment.newInstance(authUser);
@@ -289,6 +254,23 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
                  .commit();
          }
 
+        return v;
+
+    }
+
+    private void getCurrentLocation() {
+        LocationManager manager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        Criteria mCriteria = new Criteria();
+        String bestProvider = String.valueOf(manager.getBestProvider(mCriteria, true));
+        Location location;
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            location = manager.getLastKnownLocation(bestProvider);
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+
+        }
+    }
+
+    private void buildMap() {
         mSupportMapFragment = SupportMapFragment.newInstance();
         FragmentManager fm = getFragmentManager();
         mSupportMapFragment.getMapAsync(this);
@@ -299,9 +281,6 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
             fm.beginTransaction().hide(mSupportMapFragment).commit();
         else
             fm.beginTransaction().show(mSupportMapFragment).commit();
-
-        return v;
-
     }
 
     @Override
@@ -309,8 +288,6 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
         Log.d("lifecycleCheck", "TripMapFragment: onMapReady called");
 
         map = googleMap;
-        //map.getUiSettings().setScrollGesturesEnabled(false);
-
         if(tripInProgress != null){
             updateMapForPassengers(tripInProgress,authUser);
         }
@@ -328,12 +305,10 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
             //This method doesn't provide specific data that we need to use. Such as LatLng
             //Maybe we can use this method just for its UI.
             map.setMyLocationEnabled(true);
-            manager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-            mCriteria = new Criteria();
-            bestProvider = String.valueOf(manager.getBestProvider(mCriteria, true));
-            location = manager.getLastKnownLocation(bestProvider);
+            getCurrentLocation();
+
            if(tripInProgress == null) {
-               map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+//               map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
            }
         } else {
             //Todo: Maybe show dialog that tells users why we need their location.
@@ -355,23 +330,13 @@ public class TripMapFragment extends Fragment implements OnMapReadyCallback, Goo
     }
 
     public void updateLocation() {
+
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             map.setMyLocationEnabled(true);
-            manager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-            mCriteria = new Criteria();
-            bestProvider = String.valueOf(manager.getBestProvider(mCriteria, true));
-            location = manager.getLastKnownLocation(bestProvider);
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+            getCurrentLocation();
+           // map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
             return;
         }
-//        location = manager.getLastKnownLocation(bestProvider);
-//        map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+
     }
 }
