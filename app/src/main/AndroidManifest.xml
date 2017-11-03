@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".Activities.SplashScreen" android:theme="@style/Theme.AppCompat.NoActionBar">
+        <activity android:name=".Activities.LoginActivity" android:theme="@style/Theme.AppCompat.NoActionBar">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -28,7 +28,7 @@
         <activity android:name=".Activities.RegisterActivity" android:label="Registration"/>
         <activity android:name=".Activities.ResetPasswordActivity" android:label="Reset Password"/>
         <activity android:name=".Activities.MainActivity" android:label="Greencar" />
-        <activity android:name=".Activities.LoginActivity" android:label="Greencar"/>
+        <activity android:name=".Activities.SplashScreen" android:label="Greencar"/>
 
 
         <meta-data
