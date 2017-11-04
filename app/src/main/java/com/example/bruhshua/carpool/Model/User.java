@@ -61,7 +61,6 @@ public class User implements Serializable{
         this.email = email;
         this.userName = displayName;
         this.ackCurrentTrip = false;
-
     }
 
     public boolean isAckCurrentTrip() {

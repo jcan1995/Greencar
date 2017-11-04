@@ -2,9 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:andorid="http://schemas.android.com/apk/res-auto"
     android:padding="16dp"
-    android:background="@color/colorAccent"
- >
+    android:background="@color/colorAccent">
 
     <TextView
         android:layout_width="wrap_content"
@@ -28,6 +28,7 @@
             android:layout_width="128dp"
             android:layout_height="128dp"
             android:id="@+id/ivAddImage"
+            android:onClick="getProfilePicture"
             android:layout_gravity="center"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"
@@ -47,7 +48,7 @@
 
 
         <EditText
-            android:id="@+id/tvRegEmail"
+            android:id="@+id/etRegEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/input_outline"
@@ -72,7 +73,7 @@
             android:layout_marginBottom="16dp"
             android:hint="@string/prompt_password"
             android:padding="10dp"
-            android:id="@+id/tvRegPassword"
+            android:id="@+id/etRegPassword"
             android:inputType="textPassword"
          />
         <EditText
@@ -117,7 +118,9 @@
         android:layout_below="@+id/linearLayout"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-         />
+        android:onClick="registerUser"
+        />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -126,11 +129,8 @@
         android:textColor="@color/white"
         android:onClick="backToLogIn"
         android:layout_marginTop="16dp"
-        android:id="@+id/etBack"
+        android:id="@+id/tvBack"
         android:layout_below="@id/bRegister"
         android:layout_centerHorizontal="true" />
-        <!--android:clickable="true"-->
-        <!--android:onClick="registerUser"-->
-
 
 </RelativeLayout>
