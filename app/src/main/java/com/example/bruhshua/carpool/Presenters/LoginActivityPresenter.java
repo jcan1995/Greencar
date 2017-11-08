@@ -2,7 +2,7 @@ package com.example.bruhshua.carpool.Presenters;
 
 import android.app.Activity;
 
-import com.example.bruhshua.carpool.Model.FirebaseAuthentication;
+import com.example.bruhshua.carpool.Model.FirebaseLogin;
 import com.example.bruhshua.carpool.Model.User;
 import com.example.bruhshua.carpool.interfaces.LoginActivityInterface;
 
@@ -12,11 +12,11 @@ import com.example.bruhshua.carpool.interfaces.LoginActivityInterface;
 
 public class LoginActivityPresenter implements LoginActivityInterface.Presenter {
 
-    private FirebaseAuthentication firebase;
+    private FirebaseLogin firebase;
     private LoginActivityInterface.View mView;
 
     public LoginActivityPresenter(LoginActivityInterface.View view){
-        firebase = new FirebaseAuthentication(this);
+        firebase = new FirebaseLogin(this);
         mView = view;
     }
 

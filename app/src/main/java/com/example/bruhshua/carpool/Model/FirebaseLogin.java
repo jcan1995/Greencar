@@ -24,7 +24,7 @@ import io.reactivex.Observer;
  * Created by bruhshua on 11/1/17.
  */
 
-public class FirebaseAuthentication{
+public class FirebaseLogin {
 
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
@@ -32,7 +32,7 @@ public class FirebaseAuthentication{
 
     private LoginActivityInterface.Presenter mPresenter;
 
-    public FirebaseAuthentication(LoginActivityInterface.Presenter presenter){
+    public FirebaseLogin(LoginActivityInterface.Presenter presenter){
         database = FirebaseDatabase.getInstance();
         users_ref = database.getReference("users");
         mAuth = FirebaseAuth.getInstance();
@@ -66,4 +66,7 @@ public class FirebaseAuthentication{
             }
         });
     }
+
+
+
 }

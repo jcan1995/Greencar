@@ -10,7 +10,9 @@ import android.util.Log;
 
 import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.Model.User;
+import com.example.bruhshua.carpool.Presenters.SplashScreenPresenter;
 import com.example.bruhshua.carpool.R;
+import com.example.bruhshua.carpool.interfaces.SplashScreenInterface;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -22,20 +24,14 @@ import com.google.firebase.database.ValueEventListener;
  * Created by bruhshua on 7/28/17.
  */
 
-public class SplashScreen extends Activity {
+public class SplashScreen extends Activity implements SplashScreenInterface.View{
 
-    private FirebaseAuth firebaseAuth;
-    private static int SPLASH_TIME_OUT = 1000;
-    private DatabaseReference users_ref;
-    private FirebaseDatabase database;
-
+    private SplashScreenPresenter splashScreenPresenter;
 
     @Override
     protected void onStart() {
         super.onStart();
-
         Log.d("SplashScreen","onStart");
-
     }
 
     @Override
@@ -43,71 +39,22 @@ public class SplashScreen extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.splash_screen);
 
-        firebaseAuth = FirebaseAuth.getInstance();
-        database = FirebaseDatabase.getInstance();
-        users_ref = database.getReference("users");
+        splashScreenPresenter = new SplashScreenPresenter(this);
+        splashScreenPresenter.attemptLogin();
+    }
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("SplashScreen","in run");
+    @Override
+    public void toLoginPage() {
+        finish();
+        Intent i = new Intent(getApplicationContext(), LoginActivity.class);
+        startActivity(i);
+    }
 
-                if(firebaseAuth.getCurrentUser() != null){
-                    Log.d("SplashScreen","after condition check");
-
-                    users_ref.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            Log.d("SplashScreen","in onDataChange ");
-
-                            for(DataSnapshot message: dataSnapshot.getChildren()){
-                                User authUser = message.getValue(User.class);
-
-                                if(firebaseAuth.getCurrentUser().getEmail().equals(authUser.getEmail())){
-                                    TripDetails tripInProgress = dataSnapshot.child(authUser.getKey()).child("trip_in_progress").getValue(TripDetails.class);
-                                    if(tripInProgress == null){
-                                        Log.d("SplashScreen","tripinprogress is null");
-
-                                    }else{
-                                        Log.d("SplashScreen","tripinprogress is not null");
-                                        Log.d("SplashScreen","destination:" + tripInProgress.getDestinationAddress());
-
-                                    }
-                                    // users_ref.child(authUser.getKey()).child("trip_in_progress").
-                                    finish();
-                                    Intent i = new Intent(getApplicationContext(), MainActivity.class);
-                                    i.putExtra("USER",authUser);
-                                   // i.putExtra("TRIPINPROGRESS",tripInProgress);
-                                    startActivity(i);
-
-                                }
-                            }
-
-                            Log.d("SplashScreen","in onDataChange after for loop");
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-                            Log.d("SplashScreen","in onCancelled");
-                        }
-                    });
-                }else{
-                    Log.d("SplashScreen","in else ");
-                    finish();
-                    Intent i = new Intent(getApplicationContext(), LoginActivity.class);
-                    startActivity(i);
-                }
-
-            }
-
-
-
-        },SPLASH_TIME_OUT);
-        Log.d("SplashScreen","after timeout");
-
-//        finish();
-//        Intent i = new Intent(getApplicationContext(), LoginActivity.class);
-//        startActivity(i);
-//        Log.d("SplashScreen","after timeout");
+    @Override
+    public void toHomePage(User authUser) {
+        finish();
+        Intent i = new Intent(getApplicationContext(), MainActivity.class);
+        i.putExtra("USER",authUser);
+        startActivity(i);
     }
 }

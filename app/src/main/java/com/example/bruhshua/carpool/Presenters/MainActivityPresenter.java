@@ -1,6 +1,5 @@
 package com.example.bruhshua.carpool.Presenters;
 
-import com.example.bruhshua.carpool.Model.FirebaseAuthentication;
 import com.example.bruhshua.carpool.Model.FirebaseMainActivity;
 import com.example.bruhshua.carpool.Model.TripDetails;
 import com.example.bruhshua.carpool.Model.User;
