@@ -60,7 +60,9 @@ public class FirebaseAuthentication{
                         }
                     });
 
-                }
+                }else
+                    mPresenter.loadUser(null);
+
             }
         });
     }

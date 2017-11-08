@@ -7,6 +7,7 @@ import com.example.bruhshua.carpool.Model.User;
  */
 
 public interface LoginActivityInterface {
+
     interface View{
         void attemptLogin(User user);
 
